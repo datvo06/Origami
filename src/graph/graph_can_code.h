@@ -265,7 +265,7 @@ ostream& operator<< (ostream&, const canonical_code<GRAPH_PROP, V_T, E_T, ALLOC 
  *
  * pattern_prop is set to undirected (graph property)
  */
-template<typename PP, typename V_T, typename E_T, template <typename> class ALLOC=std::allocator >
+template<typename PP, typename V_T, typename E_T, template <typename> class ALLOC>
 class canonical_code<GRAPH_PROP, V_T, E_T, ALLOC >
 {
  public:
