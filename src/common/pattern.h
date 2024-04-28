@@ -307,7 +307,7 @@ class pattern
       if (src_l == dest_l) {
         if (s_ids->size() == 1) return 0;
 	for (sit = s_ids->begin(); sit < s_ids->end()-1; sit++)
-	  for (dit = s_ids+1; dit < s_ids->end(); dit++)
+	  for (dit = s_ids->begin() + 1; dit < s_ids->end(); dit++)
 	    if (get_out_edge(*sit, *dit, e)) 
 	      if (e == e_l) count++;
       }
