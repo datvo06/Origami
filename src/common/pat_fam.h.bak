@@ -1,7 +1,7 @@
 /*
- *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic Institute
- *  Written by parimi@cs.rpi.edu
- *  Updated by chaojv@cs.rpi.edu, alhasan@cs.rpi.edu, salems@cs.rpi.edu
+ *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic
+ * Institute Written by parimi@cs.rpi.edu Updated by chaojv@cs.rpi.edu,
+ * alhasan@cs.rpi.edu, salems@cs.rpi.edu
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -27,45 +27,45 @@
 
 // this container shall be eventually buffered //
 
-template<typename P, template<typename T> class ST>
-class pat_fam;
-template<typename P, template<typename T> class ST>
-std::ostream& operator<< (std::ostream&, const pat_fam<P, ST>&);
+template <typename P, template <typename T> class ST> class pat_fam;
+template <typename P, template <typename T> class ST>
+std::ostream &operator<<(std::ostream &, const pat_fam<P, ST> &);
 
 /** \class pat_fam
- * \brief Pattern Family class, denotes a collection of patterns. No constraint is imposed on the comprising patterns
+ * \brief Pattern Family class, denotes a collection of patterns. No constraint
+ * is imposed on the comprising patterns
  *
  * P is the pattern class, ST is the storage container type
  * e.g. P=pattern<itemset<int> >, ST=vector
  */
-template<typename P, template<typename T> class ST=std::vector>
-class pat_fam: public ST<P*>
-{
-  public:
-  typedef typename ST<P*>::iterator IT; /**< iterator over the pattern family */
-  typedef typename ST<P*>::const_iterator CONST_IT; /**< constant iterator over the pattern family */
+template <typename P, template <typename T> class ST = std::vector>
+class pat_fam : public ST<P *> {
+public:
+  typedef
+      typename ST<P *>::iterator IT; /**< iterator over the pattern family */
+  typedef typename ST<P *>::const_iterator
+      CONST_IT; /**< constant iterator over the pattern family */
 
-  /** \fn friend ostream& operator<< <>(ostream& ostr, const pat_fam<P, ST>& pats)
-   * \brief friend function defining the extraction operator
-   * \param ostr Ostream object
-   * \param pats pat_fam object
+  /** \fn friend ostream& operator<< <>(ostream& ostr, const pat_fam<P, ST>&
+   * pats) \brief friend function defining the extraction operator \param ostr
+   * Ostream object \param pats pat_fam object
    */
-  friend std::ostream& operator<< <>(std::ostream&, const pat_fam<P, ST>&);
+  friend std::ostream &operator<< <>(std::ostream &, const pat_fam<P, ST> &);
 
   void print_pids() {
     typename pat_fam<P, std::vector>::CONST_IT it;
-    for(it=this->begin(); it!=this->end(); it++)
+    for (it = this->begin(); it != this->end(); it++)
       cout << (*it)->pat_id() << " ";
-    cout << endl; 
+    cout << endl;
   }
 };
 
-template<class P>
-std::ostream& operator<< (std::ostream& ostr, const pat_fam<P, std::vector>& pats)
-{
+template <class P>
+std::ostream &operator<<(std::ostream &ostr,
+                         const pat_fam<P, std::vector> &pats) {
   typename pat_fam<P, std::vector>::CONST_IT it;
-  for(it=pats.begin(); it!=pats.end(); it++)
-    ostr<<*it;
+  for (it = pats.begin(); it != pats.end(); it++)
+    ostr << *it;
   return ostr;
 }
 

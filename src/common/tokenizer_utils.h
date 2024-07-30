@@ -1,9 +1,8 @@
 /*
- *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic Institute
- *  Written by parimi@cs.rpi.edu
- *  Updated by chaojv@cs.rpi.edu, alhasan@cs.rpi.edu, salems@cs.rpi.edu
- *  Modifications:
- *            Added LINE_SZ -- zaki 5/15/06
+ *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic
+ * Institute Written by parimi@cs.rpi.edu Updated by chaojv@cs.rpi.edu,
+ * alhasan@cs.rpi.edu, salems@cs.rpi.edu Modifications: Added LINE_SZ -- zaki
+ * 5/15/06
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -22,30 +21,29 @@
 #ifndef _TOKENIZER_UTILS_H_
 #define _TOKENIZER_UTILS_H_
 
-#define LINE_SZ 10000 //number of characters per line in database file
+#define LINE_SZ 10000 // number of characters per line in database file
 
-struct parse_word 
-{
+struct parse_word {
 
   /**
-    * Reads in a delim-delimited set of characsters from line into word, 
-    * and returns pointer to next char that needs to be read
-    */
-  char* operator() (char* line, char* word, char delim=' ') const {
+   * Reads in a delim-delimited set of characsters from line into word,
+   * and returns pointer to next char that needs to be read
+   */
+  char *operator()(char *line, char *word, char delim = ' ') const {
 
-    while(*line && *line!=delim) {
-      *word=*line;
+    while (*line && *line != delim) {
+      *word = *line;
       word++;
       line++;
     }
-    *word='\0';
+    *word = '\0';
 
-    if(*line==delim) {
+    if (*line == delim) {
       line++;
     }
 
     return line;
-  } //end parse_word()
+  } // end parse_word()
 };
 
 #endif

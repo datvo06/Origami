@@ -1,7 +1,7 @@
 /*
- *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic Institute
- *  Written by parimi@cs.rpi.edu
- *  Updated by chaojv@cs.rpi.edu, alhasan@cs.rpi.edu, salems@cs.rpi.edu
+ *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic
+ * Institute Written by parimi@cs.rpi.edu Updated by chaojv@cs.rpi.edu,
+ * alhasan@cs.rpi.edu, salems@cs.rpi.edu
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -23,23 +23,22 @@
 #include <ext/hash_set>
 #include <set>
 // #include "graph_evat.h"
-#include "pattern.h"
 #include "generic_classes.h"
-#include "typedefs.h"
 #include "helper_funs.h"
+#include "pattern.h"
+#include "typedefs.h"
 
 time_tracker tt_vat, tt_fwd_isect, tt_back_isect;
-int fwd_isect_cnt=0;
-int back_isect_cnt=0;
+int fwd_isect_cnt = 0;
+int back_isect_cnt = 0;
 
-
-template<typename PP, typename MP, template <typename> class ALLOC, 
-         template<typename, typename> class ST>
+template <typename PP, typename MP, template <typename> class ALLOC,
+          template <typename, typename> class ST>
 class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>;
 
-template<typename PP, typename MP, template <typename> class ALLOC,
-         template<typename, typename> class ST>
-ostream& operator<< (ostream& ostr, const vat<PP, MP, ALLOC, ST>* v);
+template <typename PP, typename MP, template <typename> class ALLOC,
+          template <typename, typename> class ST>
+ostream &operator<<(ostream &ostr, const vat<PP, MP, ALLOC, ST> *v);
 
 /** Graph vat class */
 // NOTE: ST should model a vector, else this class shall not compile
@@ -48,169 +47,149 @@ ostream& operator<< (ostream& ostr, const vat<PP, MP, ALLOC, ST>* v);
 /**
  * \brief Graph VAT class by partial specialization of the generic VAT class.
  *
- * In this partial specialization, PP is fixed to undirected (undirected graph property),
- * MP is fixed to Fk X F1 and vert_mine (vertical mining with FK X F1),
- * ST is the VAT storage type. For graph, ST should model a vector, else this
- * shall not compile.
+ * In this partial specialization, PP is fixed to undirected (undirected graph
+ * property), MP is fixed to Fk X F1 and vert_mine (vertical mining with FK X
+ * F1), ST is the VAT storage type. For graph, ST should model a vector, else
+ * this shall not compile.
  */
 
-template<typename PP, typename MP, template <typename> class ALLOC, template<typename, typename> class ST>
-class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
-{
- public:
+template <typename PP, typename MP, template <typename> class ALLOC,
+          template <typename, typename> class ST>
+class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST> {
+public:
+  typedef evat<ALLOC>
+      EVAT; // edge-vat, includes the occurence of an edge in one transaction
+            // graphs it is a vector, since more than one instance of an edge
+            // can be occured in a graph. so, it is a vector<pair<int, int> >,
+            // the pair stores the id of the vertex in the transaction graph,
+            // where the edge occured. id's are ordered as edge order, like
+            // A----B as (2,3) where label(2)=A, label(3)=B
 
-  typedef evat<ALLOC> EVAT;   // edge-vat, includes the occurence of an edge in one transaction graphs
-                              // it is a vector, since more than one instance of an edge can be occured
-			      // in a graph. so, it is a vector<pair<int, int> >, the pair stores the
-			      // id of the vertex in the transaction graph, where the edge occured.
-			      // id's are ordered as edge order, like A----B as (2,3) where label(2)=A, label(3)=B
-
-  typedef vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST> VAT;     // This class
-  typedef ST<EVAT, ALLOC<EVAT> > RMP_VATS;           // vector of EVAT that holds EVATS of the edges
-                                                     // in the rightmost path.
-  typedef ST<pair<int, RMP_VATS>, ALLOC<pair<int, RMP_VATS> > > GVAT;   
-  /* a pair holds <tid, rightmostpath-vats>. ST is a vector that corresponds to all the graph
-   * transactions where this pattern occured.
+  typedef vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST> VAT; // This class
+  typedef ST<EVAT, ALLOC<EVAT>> RMP_VATS; // vector of EVAT that holds EVATS of
+                                          // the edges in the rightmost path.
+  typedef ST<pair<int, RMP_VATS>, ALLOC<pair<int, RMP_VATS>>> GVAT;
+  /* a pair holds <tid, rightmostpath-vats>. ST is a vector that corresponds to
+   * all the graph transactions where this pattern occured.
    */
-  typedef HASHNS::hash_set<int, HASHNS::hash<int>, std::equal_to<int>, ALLOC<int> > VSET; /**< Set of vertex ids denoting exactly 
-                                                                                               one of this graph's occurence in 
-                                                                                               the dataset */
-  typedef vector<vector<VSET, ALLOC<VSET> >, ALLOC<vector<VSET, ALLOC<VSET> > > > VSETS; /**< This graph can occur several times 
-                                                                                              in one graph in the dataset, and in 
-                                                                                              several graphs (tids) as well */
+  typedef HASHNS::hash_set<int, HASHNS::hash<int>, std::equal_to<int>,
+                           ALLOC<int>>
+      VSET; /**< Set of vertex ids denoting exactly
+                 one of this graph's occurence in
+                 the dataset */
+  typedef vector<vector<VSET, ALLOC<VSET>>, ALLOC<vector<VSET, ALLOC<VSET>>>>
+      VSETS; /**< This graph can occur several times
+                  in one graph in the dataset, and in
+                  several graphs (tids) as well */
   typedef typename GVAT::const_iterator CONST_IT;
   typedef typename GVAT::iterator IT;
-  typedef typename ST<EVAT, ALLOC<EVAT> >::const_iterator CONST_EIT;
+  typedef typename ST<EVAT, ALLOC<EVAT>>::const_iterator CONST_EIT;
   typedef typename VSETS::iterator VS_IT;
   typedef typename VSETS::const_iterator CONST_VS_IT;
 
-  void* operator new(size_t size) {
+  void *operator new(size_t size) {
     ALLOC<VAT> v;
     return v.allocate(size);
   }
 
-  void  operator delete(void *p, size_t size) {
+  void operator delete(void *p, size_t size) {
     if (p) {
       ALLOC<VAT> v;
-      v.deallocate(static_cast<VAT*> (p), size);
+      v.deallocate(static_cast<VAT *>(p), size);
     }
   }
 
-  IT begin() { 
-    return _vat.begin();
-  }
-  CONST_IT begin() const { 
-    return _vat.begin();
-  }
-  IT end() { 
-    return _vat.end();
-  }
-  CONST_IT end() const { 
-    return _vat.end();
-  }
+  IT begin() { return _vat.begin(); }
+  CONST_IT begin() const { return _vat.begin(); }
+  IT end() { return _vat.end(); }
+  CONST_IT end() const { return _vat.end(); }
 
-  VS_IT begin_v() { 
-    return _vids.begin();
-  }
-  CONST_VS_IT begin_v() const { 
-    return _vids.begin();
-  }
-  VS_IT end_v() { 
-    return _vids.end();
-  }
-  CONST_VS_IT end_v() const { 
-    return _vids.end();
-  }
+  VS_IT begin_v() { return _vids.begin(); }
+  CONST_VS_IT begin_v() const { return _vids.begin(); }
+  VS_IT end_v() { return _vids.end(); }
+  CONST_VS_IT end_v() const { return _vids.end(); }
 
-  friend ostream& operator<< <>(ostream&, const VAT*);
+  friend ostream &operator<< <>(ostream &, const VAT *);
 
-  int size() const { 
-    return _vat.size();
-  }
+  int size() const { return _vat.size(); }
 
-  bool empty() const { 
-    return _vat.empty();
-  }
+  bool empty() const { return _vat.empty(); }
 
-  const pair<int, EDGE_SETS >& back() const { 
-    return _vat.back();
-  }
+  const pair<int, EDGE_SETS> &back() const { return _vat.back(); }
 
   // a new edge occured in a new transaction graph
-  void insert_occurrence_tid(const int& tid, const pair<int, int>& new_occurrence) {
-    ST<EVAT, ALLOC<EVAT> > new_evats;    // an empty vector of edge vat
-    evat<ALLOC> new_evat;                // an empty evat
-    new_evat.push_back(new_occurrence);  // pushing this vid-pairs in this empty evat
-    new_evats.push_back(new_evat);       // pushing the evat in the empty edge-vat vector
-    _vat.push_back(make_pair(tid, new_evats)); // making an entry for graph vat and pushing in that entry
-  }//insert_new_occurrence()
-
+  void insert_occurrence_tid(const int &tid,
+                             const pair<int, int> &new_occurrence) {
+    ST<EVAT, ALLOC<EVAT>> new_evats; // an empty vector of edge vat
+    evat<ALLOC> new_evat;            // an empty evat
+    new_evat.push_back(
+        new_occurrence); // pushing this vid-pairs in this empty evat
+    new_evats.push_back(
+        new_evat); // pushing the evat in the empty edge-vat vector
+    _vat.push_back(make_pair(
+        tid,
+        new_evats)); // making an entry for graph vat and pushing in that entry
+  } // insert_new_occurrence()
 
   // a new edge occured in this already seen transaction
-  void insert_occurrence_evat(const pair<int, int>& new_occurrence) {
-    evat<ALLOC> new_evat;                     // an empty evat for the new edge
-    new_evat.push_back(new_occurrence);       // pushing the edge occurence in the new empty evat
-    _vat.back().second.push_back(new_evat);   // back() returns the last pair<tid, vector<evat> >, pushing
-                                              // new evat in the vector<evat>.
-  }//insert_occurrence_evat()
+  void insert_occurrence_evat(const pair<int, int> &new_occurrence) {
+    evat<ALLOC> new_evat; // an empty evat for the new edge
+    new_evat.push_back(
+        new_occurrence); // pushing the edge occurence in the new empty evat
+    _vat.back().second.push_back(
+        new_evat); // back() returns the last pair<tid, vector<evat> >, pushing
+                   // new evat in the vector<evat>.
+  } // insert_occurrence_evat()
 
   // an already seen edge's occurence in an already seen transaction
-  void insert_occurrence(const pair<int, int>& new_occurrence) {
+  void insert_occurrence(const pair<int, int> &new_occurrence) {
     _vat.back().second.back().insert(new_occurrence);
   }
 
-
-  void insert_vid_hs(const int& vid) { 
+  void insert_vid_hs(const int &vid) {
     vector<int> vs;
     vs.push_back(vid);
     _vids.back().second.push_back(vs);
   }
 
+  void insert_vid(const int &vid) { _vids.back().second.back().push_back(vid); }
 
-  void insert_vid(const int& vid) { 
-    _vids.back().second.back().push_back(vid);
-  }
-
-
-  void insert_vid_tid(const int& vid) {
-    VSET vset;                          // A new empty vset, that stores vids in transaction graph
-    vset.insert(vid);                   // inserting the vid, in that vset
-    vector<VSET, ALLOC<VSET> > vsets;   // a new empty vector<VSET>
-    vsets.push_back(vset);              // push back the above vset in the vector
-    _vids.push_back(vsets);             // push hte vsets in the _vids
-  }//insert_vid_tid()
+  void insert_vid_tid(const int &vid) {
+    VSET vset;        // A new empty vset, that stores vids in transaction graph
+    vset.insert(vid); // inserting the vid, in that vset
+    vector<VSET, ALLOC<VSET>> vsets; // a new empty vector<VSET>
+    vsets.push_back(vset);           // push back the above vset in the vector
+    _vids.push_back(vsets);          // push hte vsets in the _vids
+  } // insert_vid_tid()
   /* End of the insert_* functions. */
-
 
   /***
    * NOTE (VC): Not using this function right now.
-  void copy_vats(const pair<int, ST<evat<ALLOC>, ALLOC<evat<ALLOC> > > >& v1, const int& offset, const int& sz, bool swap=0) {
-    int i;
-    for(i=0; i<sz; i++)
+  void copy_vats(const pair<int, ST<evat<ALLOC>, ALLOC<evat<ALLOC> > > >& v1,
+  const int& offset, const int& sz, bool swap=0) { int i; for(i=0; i<sz; i++)
       if(swap)
-        _vat.back().second[i].push_back(make_pair(v1.second[i][offset].second, v1.second[i][offset].first));
-      else
+        _vat.back().second[i].push_back(make_pair(v1.second[i][offset].second,
+  v1.second[i][offset].first)); else
         _vat.back().second[i].push_back(v1.second[i][offset]);
   }//copy_vats()
-  
 
-  void copy_vats_tid(const pair<int, ST<evat<ALLOC>, ALLOC<evat<ALLOC> > > >& v1, const int& offset, const int& sz, bool swap=0) {
-    int i;
-    ST<EVAT, ALLOC<EVAT> > new_entry;
-  
+
+  void copy_vats_tid(const pair<int, ST<evat<ALLOC>, ALLOC<evat<ALLOC> > > >&
+  v1, const int& offset, const int& sz, bool swap=0) { int i; ST<EVAT,
+  ALLOC<EVAT> > new_entry;
+
     for(i=0; i<sz; i++) {
       evat<ALLOC> tmp_evat;
       if(swap)
-        tmp_evat.push_back(make_pair(v1.second[i][offset].second, v1.second[i][offset].first));
-      else
-        tmp_evat.push_back(v1.second[i][offset]);
+        tmp_evat.push_back(make_pair(v1.second[i][offset].second,
+  v1.second[i][offset].first)); else tmp_evat.push_back(v1.second[i][offset]);
         new_entry.push_back(tmp_evat);
     }
     _vat.push_back(make_pair(v1.first, new_entry));
   }//copy_vats_tid()
 
   void copy_vids_hs(const VSET& v1_vids) {
-    
+
     VSET vs;
     typename VSET::const_iterator it;
     for(it=v1_vids.begin(); it!=v1_vids.end(); it++)
@@ -229,45 +208,46 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
   }//copy_vids_tid()
   ***/
 
-  static std::vector<int>* get_common_tids(const VAT* v1, const VAT* v2) {
-     // find a common TID
-    std::vector<int>* r_vector = new vector<int>();
-    CONST_IT it_v1=v1->begin();
-    CONST_IT it_v2=v2->begin();
+  static std::vector<int> *get_common_tids(const VAT *v1, const VAT *v2) {
+    // find a common TID
+    std::vector<int> *r_vector = new vector<int>();
+    CONST_IT it_v1 = v1->begin();
+    CONST_IT it_v2 = v2->begin();
 
-    while(it_v1!=v1->end() && it_v2!=v2->end()) {
-      if(it_v1->first<it_v2->first) {
+    while (it_v1 != v1->end() && it_v2 != v2->end()) {
+      if (it_v1->first < it_v2->first) {
         it_v1++;
         continue;
       }
-  
-      if(it_v1->first>it_v2->first) {
+
+      if (it_v1->first > it_v2->first) {
         it_v2++;
         continue;
       }
       r_vector->push_back(it_v1->first);
     }
-    if (r_vector->size()) return r_vector;
+    if (r_vector->size())
+      return r_vector;
     else {
       delete r_vector;
       return 0;
     }
-  } 
+  }
   // get the tid distance, given two VATs
-  static double get_tid_distance(const VAT* v1, const VAT* v2) {
+  static double get_tid_distance(const VAT *v1, const VAT *v2) {
     cout << "In get_tid_distance\n";
-    CONST_IT it_v1=v1->begin();
-    CONST_IT it_v2=v2->begin();
+    CONST_IT it_v1 = v1->begin();
+    CONST_IT it_v2 = v2->begin();
     unsigned int intersection_size = 0;
-    while(it_v1!=v1->end() && it_v2!=v2->end()) {
-      if(it_v1->first<it_v2->first) {
-	cout << it_v1->first << " " << it_v2->first << endl;
+    while (it_v1 != v1->end() && it_v2 != v2->end()) {
+      if (it_v1->first < it_v2->first) {
+        cout << it_v1->first << " " << it_v2->first << endl;
         it_v1++;
         continue;
       }
-  
-      if(it_v1->first>it_v2->first) {
-	cout << it_v1->first << " " << it_v2->first << endl;
+
+      if (it_v1->first > it_v2->first) {
+        cout << it_v1->first << " " << it_v2->first << endl;
         it_v2++;
         continue;
       }
@@ -279,23 +259,25 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
     }
     unsigned int union_size = v1->size() + v2->size() - intersection_size;
     cout << "Out get_tid_distance\n";
-    return 1.0 - (double) intersection_size/union_size;
+    return 1.0 - (double)intersection_size / union_size;
   }
 
-  /** Main vat intersection function; It also populates support argument passed */
-  // NOTE: only one candidate is generated in a FkxF1 join of graphs, 
+  /** Main vat intersection function; It also populates support argument passed
+   */
+  // NOTE: only one candidate is generated in a FkxF1 join of graphs,
   // hence only the first value in cand_pats should be inspected
   // ASSUMPTIONS:
-  // 1. 
-  template<typename PATTERN, typename PAT_SUP>
-  static VAT** intersection(const VAT* v1, const VAT* v2, PAT_SUP** cand_sups, 
-                            PATTERN** cand_pats, bool isfwd, const pair<int,int>& vids) {
+  // 1.
+  template <typename PATTERN, typename PAT_SUP>
+  static VAT **intersection(const VAT *v1, const VAT *v2, PAT_SUP **cand_sups,
+                            PATTERN **cand_pats, bool isfwd,
+                            const pair<int, int> &vids) {
 #ifdef PRINT
-    cout<<"VAT intersection entered with v1="<<v1<<endl;
-    cout<<"v2="<<v2<<endl;
+    cout << "VAT intersection entered with v1=" << v1 << endl;
+    cout << "v2=" << v2 << endl;
 #endif
 
-    VAT* cand_vat=new VAT;
+    VAT *cand_vat = new VAT;
 
     /************* COMMENTING FOR NOW.
     tt_vat.start();
@@ -304,33 +286,37 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
     // 1. determine which edge of v1 is being extended and get its evat1
     // 2. determine right-most-path of candidate (rmp)
     // 3. find common occurrences in v2 and evat1
-    // 4. copy these common occurrences to new_vat, and also copy evats in 
+    // 4. copy these common occurrences to new_vat, and also copy evats in
     // rmp corresponding to these common occurrences
 
 <<<<<<< graph_vat.h
-    VAT* cand_vat=new VAT;  // this vat corresponds to the pattern that is generated by the join, now empty but will be filled up by this routine
-    bool is_fwd;            // is the edge added is a forward edge?
+    VAT* cand_vat=new VAT;  // this vat corresponds to the pattern that is
+generated by the join, now empty but will be filled up by this routine bool
+is_fwd;            // is the edge added is a forward edge?
 =======
     bool is_fwd;
 >>>>>>> 1.2
-    bool is_fwd_chain=false; // flag to denote whether edge appended by 
+    bool is_fwd_chain=false; // flag to denote whether edge appended by
     // intersection is at the root (which is when flag=0)
-    bool l2_eq=(cand_pats[0]->size()==3) && (cand_pats[0]->label(0)==cand_pats[0]->label(1)); // special case in evat intersection for L-2 with first edge 
+    bool l2_eq=(cand_pats[0]->size()==3) &&
+(cand_pats[0]->label(0)==cand_pats[0]->label(1)); // special case in evat
+intersection for L-2 with first edge
     // with equal vertex labels
 
-    int rmp_index; // index of last vid on rmp common to cand_pat and its 
+    int rmp_index; // index of last vid on rmp common to cand_pat and its
     // parent's rmp
-    int new_edge_state=-1; // flag to denote if the new edge to be added has 
-    // same labeled vertices, of the form A-A (flag=0); or is of the form 
+    int new_edge_state=-1; // flag to denote if the new edge to be added has
+    // same labeled vertices, of the form A-A (flag=0); or is of the form
     // A-B (flag=1); or is not canonical at all, of the form B-A (flag=2).
     // evat intersection needs to take this into account
 
     int rvid=cand_pats[0]->rmost_vid();
-    int edge_vid=-1; // vid(in pattern) of the other vertex (other than rvid) connected 
+    int edge_vid=-1; // vid(in pattern) of the other vertex (other than rvid)
+connected
     // to rvid as to form the new edge (initialized to -1)
 
     typename PATTERN::CONST_EIT_PAIR eit_p=cand_pats[0]->out_edges(rvid);
-    int back_idx=-1; // this is used only for back extensions. It holds the 
+    int back_idx=-1; // this is used only for back extensions. It holds the
     // index of edge_vid in rmp of cand_pats[0]
 
     if(eit_p.second - eit_p.first>1)
@@ -340,20 +326,21 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
 
     // get other vertex's vid
     if(is_fwd) {
-      edge_vid=eit_p.first->first;   // getting the actual vid of the other vertex (for forward ext)
-      if(edge_vid == 0) // rvid is attached to the root
+      edge_vid=eit_p.first->first;   // getting the actual vid of the other
+vertex (for forward ext) if(edge_vid == 0) // rvid is attached to the root
         is_fwd_chain=0;
       else
         is_fwd_chain=1;
     }
     else {                          // it was a back-extention
       //prev_vid=eit_p.first->first;
-      eit_p.second--;               // the final edge entry is the last edge added to this vertex.
-      edge_vid=eit_p.second->first; // getting the actual vid of the other vertex (for backward ext)
+      eit_p.second--;               // the final edge entry is the last edge
+added to this vertex. edge_vid=eit_p.second->first; // getting the actual vid of
+the other vertex (for backward ext)
 
-      /// now determine the index of edge_vid on rmp of candidate. This is 
+      /// now determine the index of edge_vid on rmp of candidate. This is
       /// used by back_intersect.
-      // TO DO: this is currently a linear search through rmp, is there a 
+      // TO DO: this is currently a linear search through rmp, is there a
       // more efficient way??
       const typename PATTERN::RMP_T& cand_rmp=cand_pats[0]->rmost_path();
       for(unsigned int i=0; i<cand_rmp.size(); i++) {
@@ -364,13 +351,12 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
       }
 
       if(back_idx==-1) {
-        cerr<<"vat.intersect: back_idx not found for edge_vid="<<edge_vid<<" in rmp.size="<<cand_rmp.size()<<endl;
-        tt_vat.stop();
-        return 0;
+        cerr<<"vat.intersect: back_idx not found for edge_vid="<<edge_vid<<" in
+rmp.size="<<cand_rmp.size()<<endl; tt_vat.stop(); return 0;
       }
     }
 
-    // now determine which of v1's evats need to be copied into cand_vat: 
+    // now determine which of v1's evats need to be copied into cand_vat:
     // if is_fwd, only evats till edge_vid need be copied
     // else all evats need to be copied
 
@@ -386,83 +372,81 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
         new_edge_state=(cand_pats[0]->label(edge_vid)>cand_pats[0]->label(rvid))+1;
       else
         new_edge_state=(cand_pats[0]->label(rvid)>cand_pats[0]->label(edge_vid))+1;
-      
+
     ******/
 
-    CONST_IT it_v1=v1->begin();
-    CONST_IT it_v2=v2->begin();
-      
+    CONST_IT it_v1 = v1->begin();
+    CONST_IT it_v2 = v2->begin();
+
     // find a common TID
-    while(it_v1!=v1->end() && it_v2!=v2->end()) {
-      if(it_v1->first<it_v2->first) {
+    while (it_v1 != v1->end() && it_v2 != v2->end()) {
+      if (it_v1->first < it_v2->first) {
         it_v1++;
         continue;
       }
-  
-      if(it_v1->first>it_v2->first) {
+
+      if (it_v1->first > it_v2->first) {
         it_v2++;
         continue;
       }
-  
-      // execution reaches here only if both TIDs are equal
-    /****  
-      const EVAT* v1_evat;
-<<<<<<< graph_vat.h
-      const EVAT* v2_evat=&(it_v2->second[0]);  // it is an edge evat, so there is only one evat, hence using second[0]
-  
-      if(!is_fwd) // for back extention
-        v1_evat=&(it_v1->second[rmp_index-1]);  // using the proper index, to extract the corresponding edge-vat
-      else { // for forward extention
-=======
-      const EVAT* v2_evat=&(it_v2->second[0]);
 
-      if(!is_fwd)    
-        v1_evat=&(it_v1->second[rmp_index-1]);
-      else {
->>>>>>> 1.2
-        if(is_fwd_chain)
-          v1_evat=&((it_v1->second)[rmp_index-1]);
-        else
-          v1_evat=&((it_v1->second)[0]);
-      }
-    ****/ 
-  
+      // execution reaches here only if both TIDs are equal
+      /****
+        const EVAT* v1_evat;
+  <<<<<<< graph_vat.h
+        const EVAT* v2_evat=&(it_v2->second[0]);  // it is an edge evat, so
+  there is only one evat, hence using second[0]
+
+        if(!is_fwd) // for back extention
+          v1_evat=&(it_v1->second[rmp_index-1]);  // using the proper index, to
+  extract the corresponding edge-vat else { // for forward extention
+  =======
+        const EVAT* v2_evat=&(it_v2->second[0]);
+
+        if(!is_fwd)
+          v1_evat=&(it_v1->second[rmp_index-1]);
+        else {
+  >>>>>>> 1.2
+          if(is_fwd_chain)
+            v1_evat=&((it_v1->second)[rmp_index-1]);
+          else
+            v1_evat=&((it_v1->second)[0]);
+        }
+      ****/
+
       /// we now have both evats, intersect them ///
-      // the intersection routines are expected to fill in the new evat in 
+      // the intersection routines are expected to fill in the new evat in
       // cand_vat
-      int v1_idx = it_v1-v1->begin();
-      int v2_idx = it_v2-v2->begin();
-      if(isfwd) {
+      int v1_idx = it_v1 - v1->begin();
+      int v2_idx = it_v2 - v2->begin();
+      if (isfwd) {
         fwd_intersect(v1, v1_idx, v2, v2_idx, vids, cand_vat);
         // fwd_isect_cnt++;
-      }
-      else {
+      } else {
         back_intersect(v1, v1_idx, v2, v2_idx, vids, cand_vat);
         // back_isect_cnt++;
       }
 
       it_v1++;
       it_v2++;
-    }//end while
+    } // end while
 
     cand_sups[0]->set_sup(make_pair(cand_vat->size(), 0));
 
-    VAT** cand_vats=new VAT*;
-    cand_vats[0]=cand_vat;
+    VAT **cand_vats = new VAT *;
+    cand_vats[0] = cand_vat;
     tt_vat.stop();
 
     return cand_vats;
-  }//end intersect()
+  } // end intersect()
 
   /**
-   * For a given transaction, go over all VSETS and 
+   * For a given transaction, go over all VSETS and
    * look for matches between the two VATs.
    */
-  void
-  static fwd_intersect(const VAT*& v1, const int& v1_idx,
-                       const VAT*& v2, const int& v2_idx,
-		       const pair<int, int>& edge_vids, 
-                       VAT*& c_vat) {
+  void static fwd_intersect(const VAT *&v1, const int &v1_idx, const VAT *&v2,
+                            const int &v2_idx, const pair<int, int> &edge_vids,
+                            VAT *&c_vat) {
 
     VSETS vs1 = (v1->_vids)[v1_idx].second;
     VSETS vs2 = (v2->_vids)[v2_idx].second;
@@ -470,72 +454,72 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
     int tid = (v2->_vids)[v2_idx].first;
 
     // For each VSETS in this transaction.
-    for(unsigned int i=0; i < vs1.size(); i++) {
+    for (unsigned int i = 0; i < vs1.size(); i++) {
 
       VSET vs1_inst = vs1[i];
       int mapped_v = vs1_inst[edge_vids.first];
       int other_v;
 
-      // Each vertex set in the transaction graph 
+      // Each vertex set in the transaction graph
       // for which the tids matched.
-      for(unsigned int j=0; j < vs2.size(); j++) {
+      for (unsigned int j = 0; j < vs2.size(); j++) {
         VSET vs2_inst = vs2[j];
 
-	if(vs2_inst[0] == mapped_v)
+        if (vs2_inst[0] == mapped_v)
           other_v = vs2_inst[1];
-	else if(vs2_inst[1] == mapped_v) 
+        else if (vs2_inst[1] == mapped_v)
           other_v = vs2_inst[0];
-	else
+        else
           continue;
 
-	// Find the other node in the vertex set vs1_inst.
-	bool fnd=false;
-	for(unsigned int k=0; k < vs1_inst.size(); k++) {
-          if(vs1_inst[k] == other_v)
-            fnd=true;
-	}
-	// if(vs1_inst.find(other_v) != vs1_inst.end()) {
-	if(fnd) {
+        // Find the other node in the vertex set vs1_inst.
+        bool fnd = false;
+        for (unsigned int k = 0; k < vs1_inst.size(); k++) {
+          if (vs1_inst[k] == other_v)
+            fnd = true;
+        }
+        // if(vs1_inst.find(other_v) != vs1_inst.end()) {
+        if (fnd) {
 
           // Copy the vset into the cand vat.
-	  c_vat->copy_vset(vs1_inst, tid);
+          c_vat->copy_vset(vs1_inst, tid);
 
-	  // Add the new vertex into the last vset, in the cand vat.
-	  c_vat->add_vertex_last(other_v);
+          // Add the new vertex into the last vset, in the cand vat.
+          c_vat->add_vertex_last(other_v);
 
-	  // Copy the edge set into the cand vat.
-	  c_vat->copy_edge_set(es1[i], tid);
+          // Copy the edge set into the cand vat.
+          c_vat->copy_edge_set(es1[i], tid);
 
-	  // Add the edge to the last edge set.
-	  if(mapped_v < other_v)
-	    c_vat->add_edge_last(make_pair(mapped_v, other_v));
-	  else
-	    c_vat->add_edge_last(make_pair(other_v, mapped_v));
+          // Add the edge to the last edge set.
+          if (mapped_v < other_v)
+            c_vat->add_edge_last(make_pair(mapped_v, other_v));
+          else
+            c_vat->add_edge_last(make_pair(other_v, mapped_v));
 
-	  break;
-	}
+          break;
+        }
       }
 
       // Check for duplicates in the candidate vat.
       EDGE_SETS esets = c_vat->_vat.back().second;
       VSETS vsets = c_vat->_vids.back().second;
-      for(unsigned int m=0; m < esets.size()-1; m++) {
-        for(unsigned int n=m+1; n < esets.size(); ) {
-          if(esets[m] == esets[n]) {
+      for (unsigned int m = 0; m < esets.size() - 1; m++) {
+        for (unsigned int n = m + 1; n < esets.size();) {
+          if (esets[m] == esets[n]) {
 
             // Copy the last element to this position
-	    // instead of deleting this one.
+            // instead of deleting this one.
             E_SET es = esets.back();
-	    esets.pop_back();
-	    esets[n] = es;
+            esets.pop_back();
+            esets[n] = es;
 
-	    // Mimic the same for the VSETS.
+            // Mimic the same for the VSETS.
             VSET vs = vsets.back();
-	    vsets.pop_back();
-	    vsets[n] = vs;
+            vsets.pop_back();
+            vsets[n] = vs;
           } else {
             n++;
-	  }
+          }
         }
       }
     }
@@ -544,11 +528,9 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
   // When an edge is being added between two vertices that
   // already exist in the graph. In this case the EDGE_SET
   // gets modified but the VSET does not.
-  void
-  static back_intersect(const VAT* v1, const int& v1_idx,
-                        const VAT* v2, const int& v2_idx,
-                        const pair<int, int>& edge_vids, 
-                        VAT*& c_vat) {
+  void static back_intersect(const VAT *v1, const int &v1_idx, const VAT *v2,
+                             const int &v2_idx, const pair<int, int> &edge_vids,
+                             VAT *&c_vat) {
 
     VSETS vs1 = (v1->_vids)[v1_idx].second;
     VSETS vs2 = (v2->_vids)[v2_idx].second;
@@ -556,13 +538,13 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
     int tid = (v2->_vids)[v2_idx].first;
 
     // For each VSETS in this transaction.
-    for(unsigned int i=0; i < vs1.size(); i++) {
+    for (unsigned int i = 0; i < vs1.size(); i++) {
 
       VSET vs1_inst = vs1[i];
       int mapped_vid1, mapped_vid2;
 
       // The smaller goes in mapped_vid1.
-      if(vs1_inst[edge_vids.first] < vs1_inst[edge_vids.second]) {
+      if (vs1_inst[edge_vids.first] < vs1_inst[edge_vids.second]) {
         mapped_vid1 = vs1_inst[edge_vids.first];
         mapped_vid2 = vs1_inst[edge_vids.second];
       } else {
@@ -570,129 +552,121 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
         mapped_vid2 = vs1_inst[edge_vids.first];
       }
 
-      // Each vertex set in the transaction graph 
+      // Each vertex set in the transaction graph
       // for which the tids matched.
-      for(unsigned int j=0; j < vs2.size(); j++) {
+      for (unsigned int j = 0; j < vs2.size(); j++) {
         VSET vs2_inst = vs2[j];
 
-	if((vs2_inst[0] == mapped_vid1 && vs2_inst[1] == mapped_vid2) ||
-           (vs2_inst[1] == mapped_vid1 && vs2_inst[0] == mapped_vid2)) {
+        if ((vs2_inst[0] == mapped_vid1 && vs2_inst[1] == mapped_vid2) ||
+            (vs2_inst[1] == mapped_vid1 && vs2_inst[0] == mapped_vid2)) {
 
-          if(es1[i].find(make_pair(mapped_vid1, mapped_vid2)) == es1[i].end()) {
+          if (es1[i].find(make_pair(mapped_vid1, mapped_vid2)) ==
+              es1[i].end()) {
             // Copy the vset into the cand vat.
-	    c_vat->copy_vset(vs1_inst, tid);
+            c_vat->copy_vset(vs1_inst, tid);
 
-	    // Copy the edge set into the cand vat.
-	    c_vat->copy_edge_set(es1[i], tid);
+            // Copy the edge set into the cand vat.
+            c_vat->copy_edge_set(es1[i], tid);
 
-	    // Add the edge to the last edge set.
-	    c_vat->add_edge_last(make_pair(mapped_vid1, mapped_vid2));
+            // Add the edge to the last edge set.
+            c_vat->add_edge_last(make_pair(mapped_vid1, mapped_vid2));
 
             break;
-	  }
-	}
+          }
+        }
       }
 
       // Check for duplicates in the candidate vat.
       EDGE_SETS esets = c_vat->_vat.back().second;
       VSETS vsets = c_vat->_vids.back().second;
-      for(unsigned int m=0; m < esets.size()-1; m++) {
-        for(unsigned int n=m+1; n < esets.size(); ) {
+      for (unsigned int m = 0; m < esets.size() - 1; m++) {
+        for (unsigned int n = m + 1; n < esets.size();) {
 
           // Duplicate edge set found.
-          if(esets[m] == esets[n]) {
+          if (esets[m] == esets[n]) {
 
             // Copy the last element to this position
-	    // instead of deleting this one.
+            // instead of deleting this one.
             E_SET es = esets.back();
-	    esets.pop_back();
-	    esets[n] = es;
+            esets.pop_back();
+            esets[n] = es;
 
-	    // Mimic the same for the VSETS.
+            // Mimic the same for the VSETS.
             VSET vs = vsets.back();
-	    vsets.pop_back();
-	    vsets[n] = vs;
+            vsets.pop_back();
+            vsets[n] = vs;
           } else {
             n++;
-	  }
+          }
         }
       }
     }
-
   }
 
   // Add an edge to the last edge set of the last tid.
-  void
-  add_vertex_last(int& v) {
-    _vids.back().second.back().push_back(v);
-  }
-
+  void add_vertex_last(int &v) { _vids.back().second.back().push_back(v); }
 
   // Add an edge to the last edge set of the last tid.
-  void
-  add_edge_last(pair<int, int> edge) {
+  void add_edge_last(pair<int, int> edge) {
     _vat.back().second.back().insert(edge);
   }
 
   // Copy a vertex set into a new VAT.
-  void
-  copy_vset(const vector<int>& vs, const int& tid) {
+  void copy_vset(const vector<int> &vs, const int &tid) {
 
     VSET cand_vs(vs.begin(), vs.end());
 
-    if(_vids.size() == 0) { // First tid.
+    if (_vids.size() == 0) { // First tid.
       VSETS vsts;
       vsts.push_back(cand_vs);
       _vids.push_back(make_pair(tid, vsts));
-    } else if(_vids.back().first == tid) {
+    } else if (_vids.back().first == tid) {
       _vids.back().second.push_back(cand_vs);
     }
   }
 
   // Copy a edge set into a new VAT.
-  void
-  copy_edge_set(const E_SET& es, const int& tid) {
+  void copy_edge_set(const E_SET &es, const int &tid) {
 
     E_SET cand_es(es.begin(), es.end());
 
-    if(_vat.size() == 0) { // First tid.
+    if (_vat.size() == 0) { // First tid.
       EDGE_SETS ests;
       ests.push_back(cand_es);
       _vat.push_back(make_pair(tid, ests));
-    } else if(_vat.back().first == tid) {
+    } else if (_vat.back().first == tid) {
       _vat.back().second.push_back(cand_es);
     }
   }
 
+  /***
+   * NOTE (VC) : This function is rendered useless
+   *             after the change in the VAT format.
+unsigned long int byte_size() const{
+    unsigned long int  b_size=0;
+    CONST_IT it;
+    CONST_EIT eit;
+    b_size += sizeof(int);
+    for (it = begin(); it!=end();++it){
+      b_size += 2*sizeof(int); //tid, number of evats
 
-    /***
-     * NOTE (VC) : This function is rendered useless
-     *             after the change in the VAT format.
-  unsigned long int byte_size() const{
-      unsigned long int  b_size=0;
-      CONST_IT it;
-      CONST_EIT eit;
-      b_size += sizeof(int);
-      for (it = begin(); it!=end();++it){
-        b_size += 2*sizeof(int); //tid, number of evats
-
-        for (eit = it->second.begin(); eit != it->second.end(); eit++){
-          b_size+=(1*sizeof(int))+eit->byte_size(); // n, e[0], e[1] .. e[n]
-        }
+      for (eit = it->second.begin(); eit != it->second.end(); eit++){
+        b_size+=(1*sizeof(int))+eit->byte_size(); // n, e[0], e[1] .. e[n]
       }
-      // (VIDS GOES HERE)
-      typename VSETS::const_iterator vit;
+    }
+    // (VIDS GOES HERE)
+    typename VSETS::const_iterator vit;
+    b_size += sizeof(int);
+    for (vit = begin_v(); vit != end_v(); vit++){
       b_size += sizeof(int);
-      for (vit = begin_v(); vit != end_v(); vit++){
-        b_size += sizeof(int);
-        typename vector<VSET>::const_iterator vvsetit;
-        for (vvsetit=vit->begin(); vvsetit!=vit->end(); vvsetit++){
-          b_size += (vvsetit->size()+1) * sizeof(int);
-        }//vvsetit
-      } //vit
-      return b_size;
-  }
-    */
+      typename vector<VSET>::const_iterator vvsetit;
+      for (vvsetit=vit->begin(); vvsetit!=vit->end(); vvsetit++){
+        b_size += (vvsetit->size()+1) * sizeof(int);
+      }//vvsetit
+    } //vit
+    return b_size;
+}
+  */
 
   /** NOTE (VC): Commenting this function to keep it simple.
   void print(){
@@ -734,124 +708,123 @@ class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>
   }
     ***/
 
-    /**
-     * NOTE(VC): Functions used by the file based implementation.
-     *           Not being used right now.
-    //writing a VAT to a binary file
-    void write_file(ostream & output) const{
-      //ostringstream output;
-      int ITSZ=sizeof(int);
-      CONST_IT it;
-      CONST_EIT eit;
-      int tid,evat_n,evat_sz;
-      int gvat_sz=_vat.size();
-      output.write(reinterpret_cast<const char *>(&gvat_sz), ITSZ);
-      for (it=begin();it!=end();++it){
-        tid=it->first;
-        evat_n=it->second.size();
-        output.write(reinterpret_cast<const char *>(&tid), ITSZ);
-        output.write(reinterpret_cast<const char *>(&evat_n), ITSZ);
-        for (eit=it->second.begin(); eit!=it->second.end(); ++eit){
-          evat_sz = eit->size();
-          output.write(reinterpret_cast<const char *>(&evat_sz), ITSZ);
-          eit->write_file(output);
-        } //for eit
-      }//it
-      // Writing _vids goes here.
-      typename VSETS::const_iterator vit;
-      int vvsetn = _vids.size();
-      output.write(reinterpret_cast<const char *>(&vvsetn), ITSZ);
-      for (vit=begin_v(); vit!=end_v(); vit++){
-        typename vector<VSET>::const_iterator vvsetit;
-        int vsetn = vit->size();
-        output.write(reinterpret_cast<const char *>(&vsetn), ITSZ);
-        for (vvsetit=vit->begin(); vvsetit!=vit->end(); vvsetit++){
-          typename VSET::iterator vsetit;
-          int n = vvsetit->size();
-          output.write(reinterpret_cast<const char *>(&n), ITSZ);
-          for (vsetit=vvsetit->begin(); vsetit!=vvsetit->end(); vsetit++){
-            int v=*vsetit;
-            output.write(reinterpret_cast<const char *>(&v), ITSZ);
-          }//vsetit
-        }//vvsetit
-      }//vit
-      //output_file.write(output.str().c_str(), output.str().size());
-    } //end write_file
-    
-    void read_file (istream & input, unsigned long int size) {
-      int ITSZ=sizeof(int);
-      int buf_size=size/ITSZ;   
-      int *buf = new int[buf_size];
-      input.read((char *)buf, (size)); 
-      int current=0;
-      int vats_size=buf[current++], vats_seen=0;
-      while(vats_seen++ < vats_size){
-        int tid=buf[current++];
-        int evat_n=buf[current++];
-        int evats_seen=0;
-        RMP_VATS edges;
-        while(evats_seen++ < evat_n){
-          evat<ALLOC> new_evat;
-          int evat_sz=buf[current++];
-          while(evat_sz-- > 0){
-            int f1, f2;
-            f1 = buf[current++];
-            f2 = buf[current++];
-            new_evat.push_back(make_pair(f1, f2));
-          }
-          edges.push_back(new_evat);
+  /**
+   * NOTE(VC): Functions used by the file based implementation.
+   *           Not being used right now.
+  //writing a VAT to a binary file
+  void write_file(ostream & output) const{
+    //ostringstream output;
+    int ITSZ=sizeof(int);
+    CONST_IT it;
+    CONST_EIT eit;
+    int tid,evat_n,evat_sz;
+    int gvat_sz=_vat.size();
+    output.write(reinterpret_cast<const char *>(&gvat_sz), ITSZ);
+    for (it=begin();it!=end();++it){
+      tid=it->first;
+      evat_n=it->second.size();
+      output.write(reinterpret_cast<const char *>(&tid), ITSZ);
+      output.write(reinterpret_cast<const char *>(&evat_n), ITSZ);
+      for (eit=it->second.begin(); eit!=it->second.end(); ++eit){
+        evat_sz = eit->size();
+        output.write(reinterpret_cast<const char *>(&evat_sz), ITSZ);
+        eit->write_file(output);
+      } //for eit
+    }//it
+    // Writing _vids goes here.
+    typename VSETS::const_iterator vit;
+    int vvsetn = _vids.size();
+    output.write(reinterpret_cast<const char *>(&vvsetn), ITSZ);
+    for (vit=begin_v(); vit!=end_v(); vit++){
+      typename vector<VSET>::const_iterator vvsetit;
+      int vsetn = vit->size();
+      output.write(reinterpret_cast<const char *>(&vsetn), ITSZ);
+      for (vvsetit=vit->begin(); vvsetit!=vit->end(); vvsetit++){
+        typename VSET::iterator vsetit;
+        int n = vvsetit->size();
+        output.write(reinterpret_cast<const char *>(&n), ITSZ);
+        for (vsetit=vvsetit->begin(); vsetit!=vvsetit->end(); vsetit++){
+          int v=*vsetit;
+          output.write(reinterpret_cast<const char *>(&v), ITSZ);
+        }//vsetit
+      }//vvsetit
+    }//vit
+    //output_file.write(output.str().c_str(), output.str().size());
+  } //end write_file
+
+  void read_file (istream & input, unsigned long int size) {
+    int ITSZ=sizeof(int);
+    int buf_size=size/ITSZ;
+    int *buf = new int[buf_size];
+    input.read((char *)buf, (size));
+    int current=0;
+    int vats_size=buf[current++], vats_seen=0;
+    while(vats_seen++ < vats_size){
+      int tid=buf[current++];
+      int evat_n=buf[current++];
+      int evats_seen=0;
+      RMP_VATS edges;
+      while(evats_seen++ < evat_n){
+        evat<ALLOC> new_evat;
+        int evat_sz=buf[current++];
+        while(evat_sz-- > 0){
+          int f1, f2;
+          f1 = buf[current++];
+          f2 = buf[current++];
+          new_evat.push_back(make_pair(f1, f2));
         }
-        _vat.push_back(make_pair(tid, edges));
+        edges.push_back(new_evat);
       }
-      //Reading _vids goes here.
+      _vat.push_back(make_pair(tid, edges));
+    }
+    //Reading _vids goes here.
 
-      int vids_size=buf[current++], vids_seen=0;
-      while(vids_seen++ < vids_size){
-        vector <VSET> new_vsetv;
-        int vsetv_n=buf[current++];
-        int vsets_seen=0;
-        while(vsets_seen++ < vsetv_n){
-          VSET new_vset;
-          int vset_sz=buf[current++];
-          while(vset_sz-- > 0){
-            int i = buf[current++];
-            new_vset.insert(i);
-          } // evat_sz
-          new_vsetv.push_back(new_vset);
-        }//vsets_seen
-        _vids.push_back(new_vsetv);
-      }//vids_seen
+    int vids_size=buf[current++], vids_seen=0;
+    while(vids_seen++ < vids_size){
+      vector <VSET> new_vsetv;
+      int vsetv_n=buf[current++];
+      int vsets_seen=0;
+      while(vsets_seen++ < vsetv_n){
+        VSET new_vset;
+        int vset_sz=buf[current++];
+        while(vset_sz-- > 0){
+          int i = buf[current++];
+          new_vset.insert(i);
+        } // evat_sz
+        new_vsetv.push_back(new_vset);
+      }//vsets_seen
+      _vids.push_back(new_vsetv);
+    }//vids_seen
 
-      //this->print();
-      input.clear();
-      delete [] buf;
-    } //read_file
-    ***/
+    //this->print();
+    input.clear();
+    delete [] buf;
+  } //read_file
+  ***/
 
   /** Returns true if vid occurs in any of the offset-th vids in tid-th vat */
-  bool is_new_vertex(const int& vid, const int& tid, const int& offset) const {
-    if(_vids[tid][offset].find(vid)==_vids[tid][offset].end()) {
+  bool is_new_vertex(const int &vid, const int &tid, const int &offset) const {
+    if (_vids[tid][offset].find(vid) == _vids[tid][offset].end()) {
       return true;
     }
     return false;
-  }//end is_new_vertex()
+  } // end is_new_vertex()
 
+  // friend class evat<ALLOC>; // required for intersect functions in evat to
+  // work
 
-  // friend class evat<ALLOC>; // required for intersect functions in evat to work
-  
- private:
+private:
   DS_EDGE_SETS _vat;
   DS_VSETS _vids;
 
-}; //end class vat for graphs
-
+}; // end class vat for graphs
 
 /**
  * NOTE (VC): Function rendered useless after changes to the VAT format.
  *
-template<typename PP, typename MP, template <typename> class ALLOC, template<typename, typename> class ST>
-  ostream& operator<< (ostream& ostr, const vat<PP, MP, ALLOC, ST>* v) {
-  typename vat<PP, MP, ALLOC, ST>::CONST_IT it;
+template<typename PP, typename MP, template <typename> class ALLOC,
+template<typename, typename> class ST> ostream& operator<< (ostream& ostr, const
+vat<PP, MP, ALLOC, ST>* v) { typename vat<PP, MP, ALLOC, ST>::CONST_IT it;
   typename vat<PP, MP, ALLOC, ST>::RMP_VATS::const_iterator rit;
 
   ostr<<"VAT:"<<endl;
@@ -863,9 +836,10 @@ template<typename PP, typename MP, template <typename> class ALLOC, template<typ
 
   // These lines print out the vid-sets
   typename vat<PP, MP, ALLOC, ST>::VSETS::const_iterator vit1;
-  // typename vector<typename vat<PP, MP, ALLOC, ST>::VSET, ALLOC<typename vat<PP, MP, ALLOC, ST>::VSET> >::const_iterator vit2;
-  typename vector<typename vat<PP, MP, ALLOC, ST>::VSET >::const_iterator vit2;
-  typename vat<PP, MP, ALLOC, ST>::VSET::const_iterator vit3;
+  // typename vector<typename vat<PP, MP, ALLOC, ST>::VSET, ALLOC<typename
+vat<PP, MP, ALLOC, ST>::VSET> >::const_iterator vit2; typename vector<typename
+vat<PP, MP, ALLOC, ST>::VSET >::const_iterator vit2; typename vat<PP, MP, ALLOC,
+ST>::VSET::const_iterator vit3;
 
   ostr<<"Vertices are"<<endl;
   for(vit1=v->begin_v(), it=v->begin(); vit1!=v->end_v(); vit1++, it++) {
@@ -876,7 +850,7 @@ template<typename PP, typename MP, template <typename> class ALLOC, template<typ
         ostr<<endl;
     }
   }
-      
+
   return ostr;
 }//operator<< for vat*
 **/

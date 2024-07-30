@@ -1,7 +1,7 @@
 /*
- *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic Institute
- *  Written by parimi@cs.rpi.edu
- *  Updated by chaojv@cs.rpi.edu, alhasan@cs.rpi.edu, salems@cs.rpi.edu
+ *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic
+ * Institute Written by parimi@cs.rpi.edu Updated by chaojv@cs.rpi.edu,
+ * alhasan@cs.rpi.edu, salems@cs.rpi.edu
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -20,23 +20,24 @@
 #ifndef _GRAPH_OPERATORS_H_
 #define _GRAPH_OPERATORS_H_
 
-
-template<class PP, class MP, class ST, template<class, typename, typename, template <typename> class > class CC, 
-         template <typename> class ALLOC >
+template <class PP, class MP, class ST,
+          template <class, typename, typename, template <typename> class>
+          class CC,
+          template <typename> class ALLOC>
 class pattern;
 
 class undirected;
 
-template<class prop, class next_property>
-class proplist;
+template <class prop, class next_property> class proplist;
 
-
-template<class PP, class MP, class PAT_ST, template<class, typename, typename, template <typename> class > class CC,
-         template <typename> class ALLOC >
-ostream& operator<< (ostream& ostr, const GRAPH_PATTERN* p) {
+template <class PP, class MP, class PAT_ST,
+          template <class, typename, typename, template <typename> class>
+          class CC,
+          template <typename> class ALLOC>
+ostream &operator<<(ostream &ostr, const GRAPH_PATTERN *p) {
   if (p) {
-    ostr<<"Canonical code: \n"<<p->_canonical_code;
-    ostr<<p->_pat_sup;
+    ostr << "Canonical code: \n" << p->_canonical_code;
+    ostr << p->_pat_sup;
   }
   return ostr;
 }

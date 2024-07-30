@@ -1,7 +1,7 @@
 /*
- *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic Institute
- *  Written by parimi@cs.rpi.edu
- *  Updated by chaojv@cs.rpi.edu, alhasan@cs.rpi.edu, salems@cs.rpi.edu
+ *  Copyright (C) 2005 M.J. Zaki <zaki@cs.rpi.edu> Rensselaer Polytechnic
+ * Institute Written by parimi@cs.rpi.edu Updated by chaojv@cs.rpi.edu,
+ * alhasan@cs.rpi.edu, salems@cs.rpi.edu
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -30,38 +30,39 @@
  */
 
 class time_tracker {
- private:
+private:
   struct timeval start_time;
   struct timeval stop_time;
-  bool  running;
+  bool running;
   double curr_time;
- public:
+
+public:
   time_tracker() {
-    running=false;
-    curr_time=0;
+    running = false;
+    curr_time = 0;
   }
 
   /** Start the timer */
   void start() {
     gettimeofday(&start_time, (struct timezone *)0);
-    running=true;
+    running = true;
   }
 
   /** Stop the timer and return the total time taken */
   void stop() {
     double st, en;
-    if (!running) return;
+    if (!running)
+      return;
     else {
       gettimeofday(&stop_time, (struct timezone *)0);
-      st = start_time.tv_sec + (start_time.tv_usec/microsec);
-      en = stop_time.tv_sec + (stop_time.tv_usec/microsec);
-      running=false;
-      curr_time+=en-st;
+      st = start_time.tv_sec + (start_time.tv_usec / microsec);
+      en = stop_time.tv_sec + (stop_time.tv_usec / microsec);
+      running = false;
+      curr_time += en - st;
     }
   }
 
-  double print() const
-  { return curr_time; }
+  double print() const { return curr_time; }
 };
 
 #endif
