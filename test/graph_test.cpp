@@ -160,6 +160,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef PRINT
   for (unsigned z = 0; z < level_one_pats.size(); z++) {
+    cout << "z: " << z << endl;
     cout << level_one_pats[z] << endl;
     cout << vat_map.get_vat(level_one_pats[z]) << endl;
   }
