@@ -31,6 +31,7 @@ using namespace std;
 
 template <typename VERTEX_T, typename EDGE_T, template <typename> class ALLOC>
 struct vertex_info;
+
 template <typename VERTEX_T, typename EDGE_T, template <typename> class ALLOC>
 ostream &operator<<(ostream &, const vertex_info<VERTEX_T, EDGE_T, ALLOC> &);
 
