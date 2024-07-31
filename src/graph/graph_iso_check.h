@@ -27,10 +27,10 @@
 #include "time_tracker.h"
 #include "typedefs.h"
 #include <algorithm>
-#include <ext/hash_map>
 #include <iostream>
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -39,9 +39,7 @@ using namespace std;
 #define INF_LABEL "99999999" // max label initializer for edge & vertex labels
 
 template <class PP, class MP, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
+          template <class, typename, typename> class CC>
 class pattern;
 
 class undirected;
@@ -51,11 +49,8 @@ template <class prop, class next_property> class proplist;
 template <typename V_T, typename E_T> struct lt_five_tuple;
 
 template <class PP, class MP, class PAT_ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
-CC<GRAPH_PROP, typename GRAPH_PATTERN::VERTEX_T, typename GRAPH_PATTERN::EDGE_T,
-   ALLOC>
+          template <class, typename, typename> class CC>
+CC<GRAPH_PROP, typename GRAPH_PATTERN::VERTEX_T, typename GRAPH_PATTERN::EDGE_T>
 check_isomorphism(GRAPH_PATTERN *const &cand_pat) {
 
   // cout << "Inside check_isomorphism..." << endl;
@@ -68,7 +63,7 @@ check_isomorphism(GRAPH_PATTERN *const &cand_pat) {
   // minimal. If not remove it from the set of candidates.
 
   typedef CC<GRAPH_PROP, typename GRAPH_PATTERN::VERTEX_T,
-             typename GRAPH_PATTERN::EDGE_T, ALLOC>
+             typename GRAPH_PATTERN::EDGE_T>
       CAN_CODE;
 
   typename GRAPH_PATTERN::EDGE_T e; // least label of edge

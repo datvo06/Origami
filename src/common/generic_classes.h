@@ -31,8 +31,7 @@
  * the second is the vertex_tpe and the third is the edge_type
  */
 
-template <class pattern_props, typename vertex_t, typename edge_t,
-          template <typename> class ALLOC>
+template <class pattern_props, typename vertex_t, typename edge_t>
 class canonical_code {};
 
 /**
@@ -45,7 +44,7 @@ class canonical_code {};
  * ST<typename P>: Storage_type, default is std::vector, P is the
  * underlying element type of ST storage type.
  */
-template <class PP, class MP, template <typename> class ALLOC = std::allocator,
+template <class PP, class MP,
           template <typename P, typename A> class ST = std::vector>
 class vat {};
 
@@ -54,16 +53,14 @@ class vat {};
  *
  * This class defines key functions used by db_parser in order to parse input db
  */
-template <typename, typename, template <typename> class A> class tokenizer {};
+template <typename, typename> class tokenizer {};
 
 /**
  * \brief A generic count support class.
  *
  */
 template <class PP, class TRANS, class st,
-          template <typename, typename, typename, template <typename> class>
-          class cc,
-          template <typename> class alloc, class sm_type>
+          template <typename, typename, typename> class CC, class sm_type>
 class count_support {};
 
 /**
@@ -93,8 +90,7 @@ class file_storage : public storage_type {};
  * PAT: The stored pattern type, VAT: The VAT type, ST_TYPE: The storage
  * type(memory, file etc.)
  */
-template <typename PAT, typename VAT, template <typename> class ALLOC,
-          typename ST_TYPE>
+template <typename PAT, typename VAT, typename ST_TYPE>
 class storage_manager {};
 
 #endif

@@ -40,13 +40,12 @@
  * This class reads the database, using the tokenizer class and populate the
  * level-1 VAT.
  */
-template <typename PATTERN, typename TOKENIZER, template <typename> class ALLOC>
-class db_reader {
+template <typename PATTERN, typename TOKENIZER> class db_reader {
 public:
-  typedef vat<typename PATTERN::PAT_PROPS, typename PATTERN::MINE_PROPS, ALLOC,
+  typedef vat<typename PATTERN::PAT_PROPS, typename PATTERN::MINE_PROPS,
               std::vector>
       VAT; /// vat typedef
-  typedef tokenizer<PATTERN, TOKENIZER, ALLOC>
+  typedef tokenizer<PATTERN, TOKENIZER>
       TKNZ; /// tokenizer class for this pattern-type, its method
             /// parse_next_line() is invoked by db_reader
   typedef map<pair<pair<typename PATTERN::VERTEX_T, typename PATTERN::VERTEX_T>,
@@ -105,7 +104,7 @@ public:
    */
   template <class SM_T>
   void get_length_one(pat_fam<PATTERN> &freq_pats,
-                      storage_manager<PATTERN, VAT, ALLOC, SM_T> &vat_hmap,
+                      storage_manager<PATTERN, VAT, SM_T> &vat_hmap,
                       const int &minsup, FREQ_MAP &fm) {
 
     int tid;
@@ -118,6 +117,7 @@ public:
                 << std::endl;
       return;
     }
+    std::cout << "Reading file " << filename << std::endl;
 
     tid = tknz.parse_next_trans(_in_db, freq_pats, vat_hmap, fm);
     int i = 1; // i keep track of total transaction read

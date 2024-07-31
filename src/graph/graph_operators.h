@@ -21,9 +21,7 @@
 #define _GRAPH_OPERATORS_H_
 
 template <class PP, class MP, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
+          template <class, typename, typename> class CC>
 class pattern;
 
 class undirected;
@@ -31,9 +29,7 @@ class undirected;
 template <class prop, class next_property> class proplist;
 
 template <class PP, class MP, class PAT_ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
+          template <class, typename, typename> class CC>
 ostream &operator<<(ostream &ostr, const GRAPH_PATTERN *p) {
   if (p) {
     ostr << "Canonical code: \n" << p->_canonical_code;

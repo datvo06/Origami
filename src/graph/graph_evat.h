@@ -22,23 +22,21 @@
 
 using namespace std;
 
-template <template <typename> class ALLOC_> class evat;
+class evat;
 
-template <template <typename> class ALLOC>
-ostream &operator<<(ostream &ostr, const evat<ALLOC> &ev);
+ostream &operator<<(ostream &ostr, const evat &ev);
 
 /** Class to store an edge vat i.e. occurrences of an edge within a graph*/
 /**
  * \brief Edge VAT class to store an occurrence of an edge within a graph
  */
-template <template <typename> class ALLOC_ = std::allocator> class evat {
+class evat {
 public:
   typedef pair<int, int> VID_PAIR; /**< Vertex ids for the two endsod edge */
   // vid_pair is the pair of vertex-id in the transaction graph where this edge
   // occured
-  typedef vector<VID_PAIR, ALLOC_<VID_PAIR>>
-      EVAT; /**< Each edge could occur multiple times in
-                 a graph */
+  typedef vector<VID_PAIR> EVAT; /**< Each edge could occur multiple times in
+                                      a graph */
   typedef typename EVAT::const_iterator CONST_IT;
   typedef typename EVAT::iterator IT;
 
@@ -49,7 +47,7 @@ public:
   IT end() { return _evat.end(); }
   CONST_IT end() const { return _evat.end(); }
 
-  friend ostream &operator<< <>(ostream &, const evat<ALLOC_> &);
+  friend ostream &operator<< <>(ostream &, const evat &);
 
   unsigned long int byte_size() const { return 2 * sizeof(int) * _evat.size(); }
 
@@ -88,8 +86,7 @@ public:
   /** Performs forward-intersection of v1_evat and v2_evat;
       populates cand_vat with result;
       v1 is of first pattern */
-  template <template <typename, typename> class VAT_ST, typename VAT,
-            template <typename> class ALLOC>
+  template <template <typename, typename> class VAT_ST, typename VAT>
   static void
   fwd_intersect(const VAT &vat_v1, const evat &evat_v1, const evat &evat_v2,
                 VAT &cand_vat, bool is_fwd_chain, const int &rmp_index,
@@ -103,10 +100,9 @@ public:
 #endif
 
     CONST_IT it_evat_v1, it_evat_v2;
-    const VAT_ST<typename VAT::VSET, ALLOC<typename VAT::VSET>> &v1_vids =
+    const VAT_ST<typename VAT::VSET> &v1_vids =
         vat_v1._vids[tid]; // vector of vsets that corresponds to this tid only
-    const pair<int, VAT_ST<evat, ALLOC<evat>>> &v1 =
-        vat_v1._vat[tid]; // the above two
+    const pair<int, VAT_ST<evat>> &v1 = vat_v1._vat[tid]; // the above two
     // lines (and their coirresponding copies in back_intersect()) are the
     // only place where evat being friend of vat is used
 
@@ -349,8 +345,7 @@ public:
 
   /** Performs back-intersection of v1_evat and v2_evat;
       populates cand_vat with result */
-  template <template <typename, typename> class VAT_ST, typename VAT,
-            template <typename> class ALLOC>
+  template <template <typename, typename> class VAT_ST, typename VAT>
   static void back_intersect(const VAT &vat_v1, const evat &evat_v1,
                              const evat &evat_v2, VAT &cand_vat,
                              const int &back_idx, const int &new_edge_state,
@@ -359,9 +354,8 @@ public:
     cout << "evat.back_intersect entered with back_idx=" << back_idx << " "
          << "new_edge_stat=" << new_edge_state << " tid=" << tid << endl;
 #endif
-    const VAT_ST<typename VAT::VSET, ALLOC<typename VAT::VSET>> &v1_vids =
-        vat_v1._vids[tid];
-    const pair<int, VAT_ST<evat, ALLOC<evat>>> &v1 = vat_v1._vat[tid];
+    const VAT_ST<typename VAT::VSET> &v1_vids = vat_v1._vids[tid];
+    const pair<int, VAT_ST<evat>> &v1 = vat_v1._vat[tid];
     CONST_IT it_evat_v1, it_evat_v2;
 
     int offset_v1;
@@ -421,9 +415,8 @@ private:
   EVAT _evat;
 };
 
-template <template <typename> class ALLOC>
-ostream &operator<<(ostream &ostr, const evat<ALLOC> &ev) {
-  typename evat<ALLOC>::CONST_IT it;
+ostream &operator<<(ostream &ostr, const evat &ev) {
+  typename evat::CONST_IT it;
   for (it = ev.begin(); it != ev.end(); it++)
     ostr << it->first << "," << it->second << " ";
   return ostr;

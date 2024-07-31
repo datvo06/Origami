@@ -166,12 +166,11 @@ template <typename V_T, typename E_T> struct edge_counter {
 };
 
 template <typename PP, class MP, class PAT_ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC, class EDGE_MAP, class SM_TYPE>
+          template <class, typename, typename> class CC, class EDGE_MAP,
+          class SM_TYPE>
 void gen_random_max_graph(
     GRAPH_PATTERN *&pat, EDGE_MAP &emap, const int &minsup,
-    count_support<GRAPH_PROP, V_Fk1_MINE_PROP, PAT_ST, CC, ALLOC, SM_TYPE> &cs,
+    count_support<GRAPH_PROP, V_Fk1_MINE_PROP, PAT_ST, CC, SM_TYPE> &cs,
     map<pair<pair<typename GRAPH_PATTERN::VERTEX_T,
                   typename GRAPH_PATTERN::VERTEX_T>,
              typename GRAPH_PATTERN::EDGE_T>,

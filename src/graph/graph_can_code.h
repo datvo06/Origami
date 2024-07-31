@@ -23,11 +23,11 @@
 using namespace std;
 
 #include "generic_classes.h"
-#include <ext/hash_map>
 #include <set>
 #include <sstream>
 #include <string>
 #include <typedefs.h>
+#include <unordered_map>
 #include <vector>
 
 time_tracker tt_iostream;
@@ -256,14 +256,11 @@ template <typename V_T, typename E_T> struct lt_five_tuple_can_order {
   }
 };
 
-template <typename PP, typename V_T, typename E_T,
-          template <typename> class ALLOC>
-class canonical_code<GRAPH_PROP, V_T, E_T, ALLOC>;
+template <typename PP, typename V_T, typename E_T>
+class canonical_code<GRAPH_PROP, V_T, E_T>;
 
-template <typename PP, typename V_T, typename E_T,
-          template <typename> class ALLOC>
-ostream &operator<<(ostream &,
-                    const canonical_code<GRAPH_PROP, V_T, E_T, ALLOC> &);
+template <typename PP, typename V_T, typename E_T>
+ostream &operator<<(ostream &, const canonical_code<GRAPH_PROP, V_T, E_T> &);
 
 /**
  * \brief Graph canonical Code class by partial specialization of
@@ -271,25 +268,21 @@ ostream &operator<<(ostream &,
  *
  * pattern_prop is set to undirected (graph property)
  */
-template <typename PP, typename V_T, typename E_T,
-          template <typename> class ALLOC>
-class canonical_code<GRAPH_PROP, V_T, E_T, ALLOC> {
+template <typename PP, typename V_T, typename E_T>
+class canonical_code<GRAPH_PROP, V_T, E_T> {
 public:
   typedef int STORAGE_TYPE;
   typedef five_tuple<V_T, E_T> FIVE_TUPLE;
   typedef FIVE_TUPLE INIT_TYPE;
   typedef eqint COMPARISON_FUNC;
 
-  typedef vector<FIVE_TUPLE, ALLOC<FIVE_TUPLE>> TUPLES;
+  typedef vector<FIVE_TUPLE> TUPLES;
   typedef typename TUPLES::const_iterator CONST_IT;
   typedef typename TUPLES::iterator IT;
-  typedef canonical_code<GRAPH_PROP, V_T, E_T, ALLOC>
-      CAN_CODE; // this class type
-  typedef HASHNS::hash_map<int, int, HASHNS::hash<int>, std::equal_to<int>,
-                           ALLOC<int>>
-      VID_HMAP; // hash an int-->int
+  typedef canonical_code<GRAPH_PROP, V_T, E_T> CAN_CODE;
+  typedef std::unordered_map<int, int> VID_HMAP;
   typedef typename VID_HMAP::const_iterator VM_CONST_IT;
-  typedef vector<int, ALLOC<int>> RMP_T;
+  typedef vector<int> RMP_T;
 
   canonical_code() : _can_code(id_generator++) {} // defunct default constructor
 
@@ -395,8 +388,7 @@ public:
     // p[t_str.length()] = 0;
     // HASHNS::hash_map<const char*, int, HASHNS::hash<const char*>,
     // eqstr>::iterator itr = level_one_hash.find(p);
-    HASHNS::hash_map<string, int, hash_func<string>, equal_to<string>>::iterator
-        itr = level_one_hash.find(t_str);
+    std::unordered_map<string, int>::iterator itr = level_one_hash.find(t_str);
     if (itr != level_one_hash.end()) {
       _can_code = itr->second;
       // delete [] p;
@@ -538,8 +530,8 @@ public:
       cout << "done freeing\n";
     }
   */
-  friend ostream &
-  operator<< <>(ostream &, const canonical_code<GRAPH_PROP, V_T, E_T, ALLOC> &);
+  friend ostream &operator<< <>(ostream &,
+                                const canonical_code<GRAPH_PROP, V_T, E_T> &);
 
 private:
   STORAGE_TYPE _can_code;
@@ -554,31 +546,26 @@ private:
   VID_HMAP _gid_to_cid; // cand graph -> code
   RMP_T _rmp;
   static int id_generator;
-  // static HASHNS::hash_map<const char*, int, HASHNS::hash<const char*>, eqstr>
-  // level_one_hash;
-  static HASHNS::hash_map<string, int, hash_func<string>, equal_to<string>>
-      level_one_hash;
+  static std::unordered_map<string, int> level_one_hash;
 
 }; // end class canonical_code for graph
 
-template <typename PP, typename V_T, typename E_T,
-          template <typename> class ALLOC>
+template <typename PP, typename V_T, typename E_T>
 ostream &operator<<(ostream &ostr,
-                    const canonical_code<GRAPH_PROP, V_T, E_T, ALLOC> &cc) {
-  typename canonical_code<GRAPH_PROP, V_T, E_T, ALLOC>::TUPLES::const_iterator
-      it;
+                    const canonical_code<GRAPH_PROP, V_T, E_T> &cc) {
+  typename canonical_code<GRAPH_PROP, V_T, E_T>::TUPLES::const_iterator it;
   for (it = cc._dfs_code.begin(); it != cc._dfs_code.end(); it++)
     ostr << *it << endl;
 
   return ostr;
 }
 
-template <class PP, typename v, typename e, template <typename> class ALLOC>
-int canonical_code<GRAPH_PROP, v, e, ALLOC>::id_generator = 1;
+template <class PP, typename v, typename e>
+int canonical_code<GRAPH_PROP, v, e>::id_generator = 1;
 
-template <class PP, typename v, typename e, template <typename> class ALLOC>
-HASHNS::hash_map<string, int, hash_func<string>, equal_to<string>>
-    canonical_code<GRAPH_PROP, v, e, ALLOC>::level_one_hash;
+template <class PP, typename v, typename e>
+std::unordered_map<string, int>
+    canonical_code<GRAPH_PROP, v, e>::level_one_hash;
 /*
 template<class PP, typename v, typename e, template <typename> class ALLOC >
 HASHNS::hash_map<const char*, int, HASHNS::hash<const char*>, eqstr>

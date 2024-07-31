@@ -24,28 +24,28 @@
 #include "generic_classes.h"
 #include "mem_storage_manager.h"
 #include "pattern.h"
+#include <memory>
 
+template <typename T> using ALLOC = std::allocator<T>;
 /**
  * \brief count_support class partially specialized for vertical mining.
  *
  */
 template <class PP, class JOIN_TYPE, class TRANS, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC, class SM_TYPE>
+          template <class, typename, typename> class CC, class SM_TYPE>
 class count_support<PP, proplist<JOIN_TYPE, proplist<vert_mine, TRANS>>, ST, CC,
-                    ALLOC, SM_TYPE> {
+                    SM_TYPE> {
 
 public:
   typedef proplist<JOIN_TYPE, proplist<vert_mine, TRANS>> MINING_PROPS;
   typedef ST PAT_ST_TYPE;
   typedef PP PATTERN_PROPS;
   // typedef SM_TYPE STORAGE_MANAGER_TYPE;
-  typedef pattern<PATTERN_PROPS, MINING_PROPS, PAT_ST_TYPE, CC, ALLOC> PATTERN;
-  typedef vat<PATTERN_PROPS, MINING_PROPS, ALLOC, std::vector> VAT;
+  typedef pattern<PATTERN_PROPS, MINING_PROPS, PAT_ST_TYPE, CC> PATTERN;
+  typedef vat<PATTERN_PROPS, MINING_PROPS, std::vector> VAT;
   typedef pattern_support<MINING_PROPS> PAT_SUP;
 
-  count_support(storage_manager<PATTERN, VAT, ALLOC, SM_TYPE> const &sm)
+  count_support(storage_manager<PATTERN, VAT, SM_TYPE> const &sm)
       : _strg_mgr(sm) {}
 
   // function to count support of candidate patterns
@@ -112,12 +112,10 @@ public:
   }
   unsigned int size() const { return _strg_mgr.size(); }
 
-  storage_manager<PATTERN, VAT, ALLOC, SM_TYPE> &get_sm_ref() {
-    return _strg_mgr;
-  }
+  storage_manager<PATTERN, VAT, SM_TYPE> &get_sm_ref() { return _strg_mgr; }
 
 private:
-  storage_manager<PATTERN, VAT, ALLOC, SM_TYPE> _strg_mgr;
+  storage_manager<PATTERN, VAT, SM_TYPE> _strg_mgr;
 
 }; // end class count_support()
 

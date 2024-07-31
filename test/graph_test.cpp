@@ -60,12 +60,10 @@ bool print = false;
 #include "pat_fam.h"
 
 #include "mem_storage_manager.h"
+
 #define GRAPH_PR proplist<undirected>
 #define GRAPH_MINE_PR proplist<Fk_F1, proplist<vert_mine>>
 #define DMTL_TKNZ_PR proplist<dmtl_format>
-
-// Defining ALLOCATOR so as to provide the flexibility to add another allocator.
-#define ALLOCATOR std::allocator
 
 time_tracker tt_total;
 
@@ -92,12 +90,16 @@ void parse_args(int argc, char *argv[]) {
   for (int i = 1; i < argc; ++i) {
     if (strcmp(argv[i], "-i") == 0) {
       infile = argv[++i];
+      std::cout << "infile: " << infile << std::endl;
     } else if (strcmp(argv[i], "-s") == 0) {
       minsup = atoi(argv[++i]);
+      std::cout << "minsup: " << minsup << std::endl;
     } else if (strcmp(argv[i], "-tm") == 0) {
       tot_max_pats = atoi(argv[++i]);
+      std::cout << "tot_max_pats: " << tot_max_pats << std::endl;
     } else if (strcmp(argv[i], "-p") == 0) {
       print = true;
+      std::cout << "print: " << print << std::endl;
     } else {
       print_usage(argv[0]);
     }
@@ -127,19 +129,17 @@ vector<int>::iterator random_starting_edge_index(vector<int> &sumlist,
   int r = get_a_random_number(1, max + 1);
   return lower_bound(sumlist.begin(), sumlist.end(), r);
 }
+
 int main(int argc, char *argv[]) {
 
   // COMMENT: For dealing with dataset in int format. Comment out the next line
   // and
   //          uncomment the line after that.
-  // typedef adj_list<std::string, std::string, ALLOCATOR > PAT_ST;
-  // typedef adj_list<my_v_label, std::string, ALLOCATOR > PAT_ST;
-  typedef adj_list<std::string, std::string, ALLOCATOR> PAT_ST;
-  typedef pattern<GRAPH_PR, GRAPH_MINE_PR, PAT_ST, canonical_code, ALLOCATOR>
-      GRAPH_PAT;
-  typedef vat<GRAPH_PR, GRAPH_MINE_PR, ALLOCATOR, std::vector> GRAPH_VAT;
+  typedef adj_list<std::string, std::string> PAT_ST;
+  typedef pattern<GRAPH_PR, GRAPH_MINE_PR, PAT_ST, canonical_code> GRAPH_PAT;
+  typedef vat<GRAPH_PR, GRAPH_MINE_PR, std::vector> GRAPH_VAT;
 
-  level_one_hmap<GRAPH_PAT::VERTEX_T, GRAPH_PAT::EDGE_T, ALLOCATOR> l1_map;
+  level_one_hmap<GRAPH_PAT::VERTEX_T, GRAPH_PAT::EDGE_T> l1_map;
   map<pair<pair<GRAPH_PAT::VERTEX_T, GRAPH_PAT::VERTEX_T>, GRAPH_PAT::EDGE_T>,
       int>
       edge_freq;
@@ -151,9 +151,9 @@ int main(int argc, char *argv[]) {
   pat_fam<GRAPH_PAT> freq_pats;
   pat_fam<GRAPH_PAT> max_pats;
 
-  storage_manager<GRAPH_PAT, GRAPH_VAT, ALLOCATOR, memory_storage> vat_map;
+  storage_manager<GRAPH_PAT, GRAPH_VAT, memory_storage> vat_map;
 
-  db_reader<GRAPH_PAT, DMTL_TKNZ_PR, ALLOCATOR> dbr(infile);
+  db_reader<GRAPH_PAT, DMTL_TKNZ_PR> dbr(infile);
   cout << "getting length one\n";
   dbr.get_length_one(level_one_pats, vat_map, minsup, edge_freq);
   cout << "Done\n";
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
     cout << level_one_pats[z] << endl;
     cout << vat_map.get_vat(level_one_pats[z]) << endl;
   }
-  db_reader<GRAPH_PAT, DMTL_TKNZ_PR, ALLOCATOR>::print_edge_freq_map(edge_freq);
+  db_reader<GRAPH_PAT, DMTL_TKNZ_PR>::print_edge_freq_map(edge_freq);
 #endif
 
   // cout<<endl<<level_one_pats.size()<<" frequent single-edged patterns
@@ -184,8 +184,7 @@ int main(int argc, char *argv[]) {
   freq_pats = level_one_pats;
 
   populate_level_one_map(freq_pats, l1_map);
-  count_support<GRAPH_PR, GRAPH_MINE_PR, PAT_ST, canonical_code, ALLOCATOR,
-                memory_storage>
+  count_support<GRAPH_PR, GRAPH_MINE_PR, PAT_ST, canonical_code, memory_storage>
       cs(vat_map);
 
   srand((unsigned)time(0)); // initializing random-seed

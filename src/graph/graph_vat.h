@@ -26,19 +26,18 @@
 #include "time_tracker.h"
 #include "typedefs.h"
 #include <algorithm>
-#include <ext/hash_map>
-#include <ext/hash_set>
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 // time_tracker tt_vat, tt_fwd_isect, tt_back_isect;
+template <typename T> using ALLOC = std::allocator<T>;
 
-template <typename PP, typename MP, template <typename> class ALLOC,
-          template <typename, typename> class ST>
-class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST>;
+template <typename PP, typename MP, template <typename, typename> class ST>
+class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ST>;
 
-template <typename PP, typename MP, template <typename> class ALLOC,
-          template <typename, typename> class ST>
-ostream &operator<<(ostream &ostr, const vat<PP, MP, ALLOC, ST> *v);
+template <typename PP, typename MP, template <typename, typename> class ST>
+ostream &operator<<(ostream &ostr, const vat<PP, MP, ST> *v);
 
 /** Graph vat class */
 // NOTE: ST should model a vector, else this class shall not compile
@@ -53,11 +52,10 @@ ostream &operator<<(ostream &ostr, const vat<PP, MP, ALLOC, ST> *v);
  * this shall not compile.
  */
 
-template <typename PP, typename MP, template <typename> class ALLOC,
-          template <typename, typename> class ST>
-class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST> {
+template <typename PP, typename MP, template <typename, typename> class ST>
+class vat<GRAPH_PROP, V_Fk1_MINE_PROP, ST> {
 public:
-  typedef vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, ST> VAT;
+  typedef vat<GRAPH_PROP, V_Fk1_MINE_PROP, ST> VAT;
 
   // The set contains the edges in one occurrence.
   typedef set<pair<int, int>, ltpair> E_SET;
@@ -694,9 +692,8 @@ private:
 /**
  * Output the VAT object
  */
-template <typename PP, typename MP, template <typename> class ALLOC,
-          template <typename, typename> class ST>
-ostream &operator<<(ostream &ostr, const vat<PP, MP, ALLOC, ST> *v) {
+template <typename PP, typename MP, template <typename, typename> class ST>
+ostream &operator<<(ostream &ostr, const vat<PP, MP, ST> *v) {
 
   // Vector is for each occurrence.
   typedef set<pair<int, int>, ltpair> E_SET;

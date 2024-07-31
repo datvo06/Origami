@@ -38,10 +38,8 @@ using namespace std;
  * graph pattern and save it
  */
 template <typename PP, typename MP, typename TP, typename PAT_ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
-class graph_reader<GRAPH_PATTERN, DMTL_TKNZ_PROP, ALLOC> {
+          template <class, typename, typename> class CC>
+class graph_reader<GRAPH_PATTERN, DMTL_TKNZ_PROP> {
 public:
   graph_reader(const int max = LINE_SZ)
       : MAXLINE(max) {} /**<constructor for graph_reader*/
@@ -232,7 +230,6 @@ private:
       el_prsr; /**< parses an element of desired type */
   element_parser<typename GRAPH_PATTERN::EDGE_T>
       edge_prsr; /**< parses an element of desired type */
-
-}; // end class tokenizer
+};
 
 #endif

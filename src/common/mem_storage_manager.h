@@ -25,8 +25,9 @@
 #include "pat_fam.h"
 #include "pat_support.h"
 #include "time_tracker.h"
-#include <ext/hash_map>
 #include <memory>
+#include <unordered_map>
+#include <utility>
 
 using namespace std;
 
@@ -40,17 +41,20 @@ using namespace std;
  * patterns. It provides routines to find/access/store VATs with a pattern key.
  */
 
-template <class PAT, template <typename> class ALLOC, class VAT>
-class storage_manager<PAT, VAT, ALLOC, memory_storage> {
+template <class PAT, class VAT>
+class storage_manager<PAT, VAT, memory_storage> {
 
   typedef typename PAT::CC_STORAGE_TYPE C_ST;
   typedef typename PAT::CC_COMPARISON_FUNC C_CF;
-  // typedef typename VAT::VAT_ALLOC ALLOC;
+  struct custom_hash {
+    size_t operator()(const C_ST &x) const {
+      // Implement the hash function for C_ST
+      return std::hash<C_ST>()(x);
+    }
+  };
 
 public:
-  typedef HASHNS::hash_map<C_ST, VAT *, HASHNS::hash<C_ST>, C_CF,
-                           ALLOC<pair<const C_ST, VAT *>>>
-      CC_ST_TO_VATPTR;
+  typedef std::unordered_map<C_ST, VAT *, custom_hash, C_CF> CC_ST_TO_VATPTR;
   typedef typename CC_ST_TO_VATPTR::const_iterator CONST_IT;
   typedef typename CC_ST_TO_VATPTR::iterator IT;
   typedef pattern_support<typename PAT::MINE_PROPS> PAT_SUP;

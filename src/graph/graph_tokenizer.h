@@ -39,12 +39,10 @@ using namespace std;
  * pattern storage and CC type of canocial code.
  */
 template <typename PP, typename MP, typename TP, typename PAT_ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
-class tokenizer<GRAPH_PATTERN, DMTL_TKNZ_PROP, ALLOC> {
+          template <class, typename, typename> class CC>
+class tokenizer<GRAPH_PATTERN, DMTL_TKNZ_PROP> {
 public:
-  typedef vat<GRAPH_PROP, V_Fk1_MINE_PROP, ALLOC, std::vector> VAT;
+  typedef vat<GRAPH_PROP, V_Fk1_MINE_PROP, std::vector> VAT;
   typedef pair<
       pair<typename GRAPH_PATTERN::VERTEX_T, typename GRAPH_PATTERN::VERTEX_T>,
       typename GRAPH_PATTERN::EDGE_T>
@@ -59,10 +57,9 @@ public:
    * value is -1 on end of stream
    */
   template <class SM_T>
-  int parse_next_trans(
-      ifstream &infile, pat_fam<GRAPH_PATTERN> &freq_pats,
-      storage_manager<GRAPH_PATTERN, VAT, ALLOC, SM_T> &vat_hmap,
-      FREQ_MAP &fm) {
+  int parse_next_trans(ifstream &infile, pat_fam<GRAPH_PATTERN> &freq_pats,
+                       storage_manager<GRAPH_PATTERN, VAT, SM_T> &vat_hmap,
+                       FREQ_MAP &fm) {
     std::string word;
 
     int lineno = 0;

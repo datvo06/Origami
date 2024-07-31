@@ -20,12 +20,13 @@
 #ifndef _LEVEL_ONE_HMAP_H
 #define _LEVEL_ONE_HMAP_H
 
-#include <ext/hash_map>
-#include <ext/hash_set>
 #include <iostream>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 using namespace std;
+template <typename P> class element_parser;
 
 /**
  * \brief Class to store edges i.e. level one patterns for graphs;
@@ -35,30 +36,39 @@ using namespace std;
 template <typename V_T, typename E_T,
           template <typename> class ALLOC = std::allocator>
 class level_one_hmap {
+
+  struct custom_hash {
+    template <typename T> size_t operator()(const T &x) const {
+      // Implement the hash function for T
+      return std::hash<T>()(
+          x); // Ensure std::hash is specialized for T or implement your own
+    }
+  };
+
 public:
   typedef element_parser<V_T> V_EP;
   typedef element_parser<E_T> E_EP;
 
-  // typedef HASHNS::hash_set<E_T, HASHNS::hash<E_T>, std::equal_to<E_T>,
-  // ALLOC<const E_T> > LABELS;
-  typedef HASHNS::hash_set<
-      typename E_EP::HASH_TYPE, HASHNS::hash<typename E_EP::HASH_TYPE>,
-      std::equal_to<typename E_EP::HASH_TYPE>, ALLOC<typename E_EP::HASH_TYPE>>
+  typedef std::unordered_set<typename E_EP::HASH_TYPE, custom_hash,
+                             std::equal_to<typename E_EP::HASH_TYPE>,
+                             ALLOC<typename E_EP::HASH_TYPE>>
       LABELS;
-  typedef HASHNS::hash_map<typename V_EP::HASH_TYPE, LABELS,
-                           HASHNS::hash<typename V_EP::HASH_TYPE>,
-                           typename V_EP::COMP_FUNC,
-                           ALLOC<std::pair<typename V_EP::HASH_TYPE, LABELS>>>
+
+  typedef std::unordered_map<
+      typename V_EP::HASH_TYPE, LABELS, custom_hash, typename V_EP::COMP_FUNC,
+      ALLOC<std::pair<const typename V_EP::HASH_TYPE, LABELS>>>
       NEIGHBORS;
-  typedef HASHNS::hash_map<
-      typename V_EP::HASH_TYPE, unsigned int,
-      HASHNS::hash<typename V_EP::HASH_TYPE>, typename V_EP::COMP_FUNC,
-      ALLOC<std::pair<typename V_EP::HASH_TYPE, unsigned int>>>
+
+  typedef std::unordered_map<
+      typename V_EP::HASH_TYPE, unsigned int, custom_hash,
+      typename V_EP::COMP_FUNC,
+      ALLOC<std::pair<const typename V_EP::HASH_TYPE, unsigned int>>>
       NEIGHBOR_CNT;
-  typedef HASHNS::hash_map<
-      typename V_EP::HASH_TYPE, NEIGHBORS,
-      HASHNS::hash<typename V_EP::HASH_TYPE>, typename V_EP::COMP_FUNC,
-      ALLOC<std::pair<typename V_EP::HASH_TYPE, NEIGHBORS>>>
+
+  typedef std::unordered_map<
+      typename V_EP::HASH_TYPE, NEIGHBORS, custom_hash,
+      typename V_EP::COMP_FUNC,
+      ALLOC<std::pair<const typename V_EP::HASH_TYPE, NEIGHBORS>>>
       HMAP;
   typedef typename HMAP::const_iterator CONST_IT;
   typedef typename HMAP::iterator IT;

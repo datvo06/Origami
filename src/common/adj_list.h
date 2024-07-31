@@ -22,10 +22,11 @@
 #define _ADJ_LIST
 
 #include <algorithm>
-#include <ext/hash_map>
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <unordered_map>
+#include <utility> // For std::pair
 
 using namespace std;
 
@@ -337,9 +338,7 @@ public:
   }
   // defining equality function object that compare a pair
   // only based on the first element
-  template <typename T1, typename T2>
-  class equality_for_pair
-      : public binary_function<pair<T1, T2>, pair<T1, T2>, bool> {
+  template <typename T1, typename T2> class equality_for_pair {
   public:
     equality_for_pair() {}
     bool operator()(const pair<T1, T2> &x, const pair<T1, T2> &y) {

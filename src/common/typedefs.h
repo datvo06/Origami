@@ -69,20 +69,20 @@
 
 // Itemset Mining #defines
 #define ISET_PATTERN                                                           \
-  pattern<ISET_PROP, V_Fkk_MINE_PROP, PAT_ST, CC,                              \
-          ALLOC> // PAT_ST is pattern storage type, CC is for Canonical Code
+  pattern<ISET_PROP, V_Fkk_MINE_PROP, PAT_ST,                                  \
+          CC> // PAT_ST is pattern storage type, CC is for Canonical Code
 
 // Multiset Mining #defines
 #define MSET_PATTERN                                                           \
-  pattern<MSET_PROP, V_Fkk_MINE_PROP, PAT_ST, CC,                              \
-          ALLOC> // PAT_ST is pattern storage type, CC is for Canonical Code
+  pattern<MSET_PROP, V_Fkk_MINE_PROP, PAT_ST,                                  \
+          CC> // PAT_ST is pattern storage type, CC is for Canonical Code
 
 // Sequence  Mining #defines
-#define SEQ_PATTERN pattern<SEQ_PROP, V_Fkk_MINE_PROP, PAT_ST, CC, ALLOC>
+#define SEQ_PATTERN pattern<SEQ_PROP, V_Fkk_MINE_PROP, PAT_ST, CC>
 
 // Tree Mining #defines
-#define TREE_PATTERN pattern<TREE_PROP, V_Fkk_MINE_PROP, PAT_ST, CC, ALLOC>
+#define TREE_PATTERN pattern<TREE_PROP, V_Fkk_MINE_PROP, PAT_ST, CC>
 
 // Graph Mining #defines
-#define GRAPH_PATTERN pattern<GRAPH_PROP, V_Fk1_MINE_PROP, PAT_ST, CC, ALLOC>
+#define GRAPH_PATTERN pattern<GRAPH_PROP, V_Fk1_MINE_PROP, PAT_ST, CC>
 #endif

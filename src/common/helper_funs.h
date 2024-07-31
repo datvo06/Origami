@@ -20,9 +20,9 @@
 #ifndef _HELPER_FUNS_H_
 #define _HELPER_FUNS_H_
 
-#include <cstring>
-
-#define HASHNS __gnu_cxx
+#include <functional>
+#include <string>
+#include <utility>
 
 /**
  * \struct eqstr
@@ -62,7 +62,8 @@ template <class PAT> struct less_than {
  * \struct less_than for pairs.
  */
 struct ltpair {
-  bool operator()(const pair<int, int> p1, const pair<int, int> p2) const {
+  bool operator()(const std::pair<int, int> p1,
+                  const std::pair<int, int> p2) const {
     if ((p1.first < p2.first) ||
         ((p1.first == p2.first) && p1.second < p2.second))
       return true;
@@ -75,7 +76,8 @@ struct ltpair {
  * \struct equal for pairs.
  */
 struct eqpair {
-  bool operator()(const pair<int, int> p1, const pair<int, int> p2) const {
+  bool operator()(const std::pair<int, int> p1,
+                  const std::pair<int, int> p2) const {
     if ((p1.first == p2.first) && (p1.first == p2.first))
       return true;
     else
@@ -87,11 +89,5 @@ struct eqpair {
  * \struct hash_func
  */
 template <class KEY> struct hash_func {};
-
-template <> struct hash_func<string> : HASHNS::hash<const char *> {
-  size_t operator()(const string &x) const {
-    return this->HASHNS::hash<const char *>::operator()(x.c_str());
-  }
-};
 
 #endif

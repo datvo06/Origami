@@ -30,50 +30,37 @@
 
 using namespace std;
 
-template <class PP, class MP, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC, class SM_TYPE>
+template <class PP, class TRANS, class ST,
+          template <class, typename, typename> class CC, class SM_TYPE>
 class count_support;
 
 template <class PP, class MP, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
+          template <class, typename, typename> class CC>
 class pattern;
 
 template <class PP, class MP, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
-void update_rmost_path(pattern<PP, MP, ST, CC, ALLOC> *const &);
+          template <class, typename, typename> class CC>
+void update_rmost_path(pattern<PP, MP, ST, CC> *const &);
 
 template <class PP, class MP, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
-ostream &operator<<(ostream &, const pattern<PP, MP, ST, CC, ALLOC> *);
+          template <class, typename, typename> class CC>
+ostream &operator<<(ostream &, const pattern<PP, MP, ST, CC> *);
 
 template <class PP, class MP, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
-bool check_isomorphism(pattern<PP, MP, ST, CC, ALLOC> *const &);
+          template <class, typename, typename> class CC>
+bool check_isomorphism(pattern<PP, MP, ST, CC> *const &);
 template <class PP, class MP, class PAT_ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
-CC<GRAPH_PROP, typename GRAPH_PATTERN::VERTEX_T, typename GRAPH_PATTERN::EDGE_T,
-   ALLOC>
+          template <class, typename, typename> class CC>
+CC<GRAPH_PROP, typename GRAPH_PATTERN::VERTEX_T, typename GRAPH_PATTERN::EDGE_T>
 check_isomorphism(GRAPH_PATTERN *const &cand_pat);
 template <class PP, class MP, class PAT_ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC>
+          template <class, typename, typename> class CC>
 ostream &operator<<(ostream &ostr, const GRAPH_PATTERN *p);
 
 #include "adj_list.h"
 #include "pat_support.h"
+
+template <typename T> using ALLOC = std::allocator<T>;
 
 /**
  * \brief The Pattern Class
@@ -83,9 +70,7 @@ ostream &operator<<(ostream &ostr, const GRAPH_PATTERN *p);
  * data structure, CC is the canonical code class.
  */
 template <class PATTERN_PROPS, class MINING_PROPS, class ST,
-          template <class, typename, typename, template <typename> class>
-          class CC,
-          template <typename> class ALLOC = std::allocator>
+          template <class, typename, typename> class CC>
 class pattern {
 
 public:
@@ -93,15 +78,15 @@ public:
   typedef PATTERN_PROPS PAT_PROPS;
   typedef MINING_PROPS MINE_PROPS;
   typedef typename ST::EDGE_T EDGE_T;
-  typedef pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC> PATTERN;
+  typedef pattern<PATTERN_PROPS, MINING_PROPS, ST, CC> PATTERN;
   typedef typename ST::IT IT;
   typedef typename ST::CONST_IT CONST_IT;
   typedef typename ST::EIT EIT;
   typedef typename ST::CONST_EIT CONST_EIT;
   typedef typename ST::EIT_PAIR EIT_PAIR;
   typedef typename ST::CONST_EIT_PAIR CONST_EIT_PAIR;
-  typedef CC<PATTERN_PROPS, VERTEX_T, EDGE_T, ALLOC> CAN_CODE;
-  typedef std::vector<int, ALLOC<int>> RMP_T;
+  typedef CC<PATTERN_PROPS, VERTEX_T, EDGE_T> CAN_CODE;
+  typedef std::vector<int> RMP_T;
   typedef typename CAN_CODE::STORAGE_TYPE CC_STORAGE_TYPE;
   typedef typename CAN_CODE::INIT_TYPE CC_INIT_TYPE;
   typedef typename CAN_CODE::COMPARISON_FUNC CC_COMPARISON_FUNC;
@@ -131,9 +116,9 @@ public:
   int rmp_size() const { return _rmost_path.size(); }
 
   /** Creates a deep copy of this object into rhs */
-  pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC> *exact_clone() const {
-    pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC> *clone =
-        new pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC>();
+  pattern<PATTERN_PROPS, MINING_PROPS, ST, CC> *exact_clone() const {
+    pattern<PATTERN_PROPS, MINING_PROPS, ST, CC> *clone =
+        new pattern<PATTERN_PROPS, MINING_PROPS, ST, CC>();
 
     CONST_IT it;
     for (it = this->begin(); it != this->end(); it++)
@@ -151,9 +136,9 @@ public:
   } // end clone()
 
   /** Creates a deep copy of this object into rhs and update the id*/
-  pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC> *clone() const {
-    pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC> *clone =
-        new pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC>();
+  pattern<PATTERN_PROPS, MINING_PROPS, ST, CC> *clone() const {
+    pattern<PATTERN_PROPS, MINING_PROPS, ST, CC> *clone =
+        new pattern<PATTERN_PROPS, MINING_PROPS, ST, CC>();
 
     CONST_IT it;
     for (it = this->begin(); it != this->end(); it++)
@@ -255,18 +240,17 @@ This function should be invoked for digraphs ONLY */
   CC_STORAGE_TYPE
   pat_id() const { return _canonical_code.getCode(); }
 
-  bool operator<(
-      const pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC> rhs) const;
+  bool operator<(const pattern<PATTERN_PROPS, MINING_PROPS, ST, CC> rhs) const;
 
   friend ostream &
   operator<< <>(ostream &,
-                const pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC> *);
+                const pattern<PATTERN_PROPS, MINING_PROPS, ST, CC> *);
 
   friend CAN_CODE check_isomorphism<>(PATTERN *const &pat);
 
   // friend function - this shall be specialized on pattern-props
-  friend void update_rmost_path<>(
-      pattern<PATTERN_PROPS, MINING_PROPS, ST, CC, ALLOC> *const &);
+  friend void
+  update_rmost_path<>(pattern<PATTERN_PROPS, MINING_PROPS, ST, CC> *const &);
 
   void set_support(const pattern_support<MINING_PROPS> *const &pat_sup) {
     _pat_sup.set_vals(pat_sup);
