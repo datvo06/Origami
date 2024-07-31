@@ -25,6 +25,7 @@
 #include <fstream>
 #include <map>
 #include <sstream>
+#include <string>
 #include <vector>
 
 // using namespace std;
@@ -57,7 +58,8 @@ public:
    * \brief Constructor
    * \param infile_name Name of the input database (flat) file
    */
-  db_reader(const char *infile_name) : _in_db(infile_name) {}
+  db_reader(const char *infile_name)
+      : _in_db(infile_name), filename(std::string(infile_name)) {}
 
   /** \fn db_reader(const char* infile_name, int mem_size)
    * \brief Constructor_for_gigabase
@@ -65,7 +67,8 @@ public:
    * \param mem_size Maximum size of memory vat for gigabase backend.
    */
   db_reader(const char *infile_name, int mem_size) : _in_db(infile_name) {
-    filename = strdup(infile_name);
+    filename = std::string(infile_name);
+    std::cout << "Filename: " << filename << std::endl;
     _max_mem = mem_size;
   }
 
@@ -168,7 +171,7 @@ public:
 
 private:
   std::ifstream _in_db;
-  char *filename; // Holds the file name of the dataset
+  std::string filename; // Holds the file name of the dataset
   unsigned long _max_mem;
   TKNZ tknz; // An object of Tokenizer class
   unsigned int _trans_cnt;

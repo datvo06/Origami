@@ -51,7 +51,7 @@
 
 // Mining properties #defines
 #define V_Fkk_MINE_PROP                                                        \
-  proplist<Fk_Fk, proplist<vert_mine, MP>> // MP stands for Mining property
+  proplist<Fk_Fk, proplist<vert_mine, MP>> // MP stands for Mining property/
 
 #define V_Fkk_EMB_MINE_PROP                                                    \
   proplist<Fk_Fk, proplist<vert_mine, proplist<embedded, MP>>>
