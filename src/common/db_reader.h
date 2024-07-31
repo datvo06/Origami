@@ -120,10 +120,9 @@ public:
                 << std::endl;
       return;
     }
-    std::cout << "Reading file " << filename << std::endl;
 
     tid = tknz.parse_next_trans(_in_db, freq_pats, vat_hmap, fm);
-    int i = 1; // i keep track of total transaction read
+    int i = 0; // i keep track of total transaction read
     while (tid != -1) {
       // cout << "Read " << i << " transaction\n";
       i++;

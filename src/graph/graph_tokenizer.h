@@ -26,9 +26,23 @@
 #include "generic_classes.h"
 #include "graph_vat.h"
 #include "tokenizer_utils.h"
+#include "typedefs.h"
 #include <fstream>
+#include <iostream>
+#include <string>
 
 using namespace std;
+std::vector<std::string> split(const std::string &str, char delimiter) {
+  std::vector<std::string> tokens;
+  std::string token;
+  std::istringstream tokenStream(str);
+
+  while (std::getline(tokenStream, token, delimiter)) {
+    tokens.push_back(token);
+  }
+
+  return tokens;
+}
 
 /**
  * \brief Graph tokenizer class by partial specialization of the generic
@@ -78,6 +92,7 @@ public:
     typename GRAPH_PATTERN::VERTEX_T v_lbl1, v_lbl2;
 
     std::string line; // holds a line, while reading a file
+    // read every single line
     while (1) {
       lineno++;
       pos = infile.tellg();
@@ -92,221 +107,164 @@ public:
         continue;
 
       // Now start tokenizing the line
-      StringTokenizer strtok = StringTokenizer(line, " ");
-      int numToks = strtok.countTokens();
-
-      if (numToks < 3) { // may be ill-formed or erroneous line
+      std::vector<std::string> tokens = split(line, ' ');
+      auto tok_it = tokens.begin();
+      if (tokens.size() < 3) { // may be ill-formed or erroneous line
         cerr << "Input file may have error at lineno:" << lineno << endl;
         map_update(fm, local_fm);
         return -1;
       }
-      word = strtok.nextToken();
-      if (word == "t") { // this is the tid line
-        if (tid != -1) { // this is a new tid, stop here
+      if (tokens[0] == "t") { // this is the tid line
+        if (tid != -1) {      // this is a new tid, stop here
           infile.seekg(pos);
           map_update(fm, local_fm);
           return tid; // this is the line from where function should
                       // return on most calls
         }
-
-        word = strtok.nextToken(); // read in the '#'
-        if (word != "#") {         // ill-formed file
+        if (tokens[1] != "#") { // ill-formed file
           cerr << "Input file may have error at lineno:" << lineno << endl;
           return -1;
         }
 
-        word = strtok.nextToken(); // read in the '#'
-        if (word.length() < 1) {
-          cerr << "Input file may have error at lineno:" << lineno << endl;
-          return -1;
-        }
-        tid = atoi(word.c_str());
-        // cout << "Found transaction id = " << tid << endl;
-
+        tid = atoi(tokens[2].c_str());
       } // if word[0]=='t'
-      else if (word == "v") { // this is a vid-line
-        num_items = 2;        // 2 more words to be parsed from this line
-        if (numToks != num_items + 1) {
+      else if (tokens[0] == "v") {
+        if (tokens.size() != 3) {
           cerr << "Input file may have error at lineno:" << lineno << endl;
           return -1;
         }
         int vid = 0;
         typename GRAPH_PATTERN::VERTEX_T v_lbl;
 
-        while (count < num_items) {
-          word = strtok.nextToken();
-          if (word.length() < 1) {
-            cerr << "Input file may have error at lineno:" << lineno << endl;
-            return -1;
-          }
-          switch (count) {
-          case 0:
-            vid = atoi(word.c_str());
-            break;
-          case 1:
-            v_lbl = el_prsr.parse_element(word);
-            /// INPUT-FORMAT: if the datafile format is to append
-            /// vertex labels with a letter (as is true for data
-            /// files in /dmtl/ascii_data on hd-01)
-            /// then simply change the
-            /// above line to:
-            /// v_lbl=el_prsr.parse_element(word+1);
-            vid_to_lbl.insert(make_pair(vid, v_lbl));
-          }
-          count++;
-
-        } // while(count<..)
-
+        vid = atoi(tokens[1].c_str());
+        v_lbl = el_prsr.parse_element(tokens[2]);
+        vid_to_lbl.insert(make_pair(vid, v_lbl));
       } // if word[0]=='v'
-      else if (word[0] == 'e') { // undirected edge
-        /// INPUT-FORMAT: if running for files in /dmtl/ascii_data on hd-01
-        /// simply change the above line to:
-        ///     else if(word[0]=='u')
-        int vid1, vid2;
-        num_items = 3;  // 3 more words to be parsed
-        bool swap_vids; // flag=false if v_lbl1<v_lbl2
-
-        if (numToks != num_items + 1) {
+      else if (tokens[0] == "e") { // undirected edge
+        if (tokens.size() != 4) {
           cerr << "Input file may have error at lineno:" << lineno << endl;
           return -1;
         }
-        while (count < num_items) {
-          word = strtok.nextToken();
-          if (word.length() < 1) {
-            cerr << "Input file may have error at lineno:" << lineno << endl;
-            return -1;
+        /// INPUT-FORMAT: if running for files in /dmtl/ascii_data on hd-01
+        /// simply change the above line to:
+        ///     else if(word[0]=='u')
+        int vid1 = atoi(tokens[1].c_str()), vid2 = atoi(tokens[2].c_str());
+        if (vid_to_lbl.find(vid1) == vid_to_lbl.end() ||
+            vid_to_lbl.find(vid2) == vid_to_lbl.end()) {
+          cerr << "graph_tokenizer.parse_next_trans: vid " << vid1
+               << " not found in vid_to_lbl" << endl;
+          return -1;
+        }
+        v_lbl1 = vid_to_lbl.find(vid1)->second;
+        v_lbl2 = vid_to_lbl.find(vid2)->second;
+        e_lbl = edge_prsr.parse_element(tokens[3]);
+        bool swap_vids; // flag=false if v_lbl1<v_lbl2
+
+        /// INPUT-FORMAT: if the datafile format is to append
+        /// edge labels with a letter (as is true for data
+        /// files in /dmtl/ascii_data on hd-01)
+        /// then simply change the
+        /// above line to:
+        /// e_lbl=el_prsr.parse_element(word+1);
+
+        /// prepare pattern ///
+        g1 = new GRAPH_PATTERN;
+        if (v_lbl1 <= v_lbl2) {
+          make_edge(g1, v_lbl1, v_lbl2, e_lbl);
+          swap_vids = 0;
+        } else {
+          make_edge(g1, v_lbl2, v_lbl1, e_lbl);
+          swap_vids = 1;
+        }
+
+        /// if g1's vat is present, check if this tid is also
+        /// present. If yes, then insert pair of vids.
+        /// If tid not present, create a new entry in vat and
+        /// insert it
+
+        if (!(gvat = vat_hmap.get_vat(g1))) { // vat not found
+          gvat = new VAT;
+          if (!swap_vids) {
+            gvat->insert_occurrence_tid(tid, make_pair(vid1, vid2));
+            gvat->insert_vid_tid(tid, vid1);
+            gvat->insert_vid(vid2);
+
+            // If the labels are the same then add the
+            // both ways.
+            if (v_lbl1 == v_lbl2) {
+              gvat->insert_occurrence(make_pair(vid2, vid1));
+              gvat->insert_vid_hs(vid2);
+              gvat->insert_vid(vid1);
+            }
+
+          } else {
+            gvat->insert_occurrence_tid(tid, make_pair(vid2, vid1));
+            gvat->insert_vid_tid(tid, vid2);
+            gvat->insert_vid(vid1);
           }
 
-          switch (count) {
-          case 0:
-            vid1 = atoi(word.c_str());
-            if ((tmp_it = vid_to_lbl.find(vid1)) == vid_to_lbl.end()) {
-              cerr << "graph_tokenizer.parse_next_trans: vid " << vid1
-                   << " not found in vid_to_lbl" << endl;
-              return -1;
-            }
-            v_lbl1 = tmp_it->second;
-            break;
+          vat_hmap.add_vat(g1, gvat); // add pattern-vat mapping
+          freq_pats.push_back(
+              g1); // this is the first time
+                   // this pattern has been encountered, so add it
+        } else if (gvat->back().first != tid) { // or, new tid
+          if (!swap_vids) {
+            gvat->insert_occurrence_tid(tid, make_pair(vid1, vid2));
+            gvat->insert_vid_tid(tid, vid1);
+            gvat->insert_vid(vid2);
 
-          case 1:
-            vid2 = atoi(word.c_str());
-            if ((tmp_it = vid_to_lbl.find(vid2)) == vid_to_lbl.end()) {
-              cerr << "graph_tokenizer.parse_next_trans: vid " << vid2
-                   << " not found in vid_to_lbl" << endl;
-              return -1;
-            }
-            v_lbl2 = tmp_it->second;
-            break;
-
-          case 2:
-            e_lbl = edge_prsr.parse_element(word);
-            /// INPUT-FORMAT: if the datafile format is to append
-            /// edge labels with a letter (as is true for data
-            /// files in /dmtl/ascii_data on hd-01)
-            /// then simply change the
-            /// above line to:
-            /// e_lbl=el_prsr.parse_element(word+1);
-
-            /// prepare pattern ///
-            g1 = new GRAPH_PATTERN;
-            if (v_lbl1 <= v_lbl2) {
-              make_edge(g1, v_lbl1, v_lbl2, e_lbl);
-              swap_vids = 0;
-            } else {
-              make_edge(g1, v_lbl2, v_lbl1, e_lbl);
-              swap_vids = 1;
+            if (v_lbl1 == v_lbl2) {
+              gvat->insert_occurrence(make_pair(vid2, vid1));
+              gvat->insert_vid_hs(vid2);
+              gvat->insert_vid(vid1);
             }
 
-            /// if g1's vat is present, check if this tid is also
-            /// present. If yes, then insert pair of vids.
-            /// If tid not present, create a new entry in vat and
-            /// insert it
+          } else {
+            gvat->insert_occurrence_tid(tid, make_pair(vid2, vid1));
+            gvat->insert_vid_tid(tid, vid2);
+            gvat->insert_vid(vid1);
+          }
 
-            if (!(gvat = vat_hmap.get_vat(g1))) { // vat not found
-              gvat = new VAT;
-              if (!swap_vids) {
-                gvat->insert_occurrence_tid(tid, make_pair(vid1, vid2));
-                gvat->insert_vid_tid(tid, vid1);
-                gvat->insert_vid(vid2);
+          if (g1) {
+            delete g1;
+            g1 = 0;
+          }
+        } else { // assert: gvat->back().first=tid
+          MAP_EDGE_T edge;
+          if (!swap_vids) {
+            edge = make_pair(make_pair(v_lbl1, v_lbl2), e_lbl);
+            gvat->insert_occurrence(make_pair(vid1, vid2));
+            gvat->insert_vid_hs(vid1);
+            gvat->insert_vid(vid2);
 
-                // If the labels are the same then add the
-                // both ways.
-                if (v_lbl1 == v_lbl2) {
-                  gvat->insert_occurrence(make_pair(vid2, vid1));
-                  gvat->insert_vid_hs(vid2);
-                  gvat->insert_vid(vid1);
-                }
-
-              } else {
-                gvat->insert_occurrence_tid(tid, make_pair(vid2, vid1));
-                gvat->insert_vid_tid(tid, vid2);
-                gvat->insert_vid(vid1);
-              }
-
-              vat_hmap.add_vat(g1, gvat); // add pattern-vat mapping
-              freq_pats.push_back(
-                  g1); // this is the first time
-                       // this pattern has been encountered, so add it
-            } else if (gvat->back().first != tid) { // or, new tid
-              if (!swap_vids) {
-                gvat->insert_occurrence_tid(tid, make_pair(vid1, vid2));
-                gvat->insert_vid_tid(tid, vid1);
-                gvat->insert_vid(vid2);
-
-                if (v_lbl1 == v_lbl2) {
-                  gvat->insert_occurrence(make_pair(vid2, vid1));
-                  gvat->insert_vid_hs(vid2);
-                  gvat->insert_vid(vid1);
-                }
-
-              } else {
-                gvat->insert_occurrence_tid(tid, make_pair(vid2, vid1));
-                gvat->insert_vid_tid(tid, vid2);
-                gvat->insert_vid(vid1);
-              }
-
-              if (g1) {
-                delete g1;
-                g1 = 0;
-              }
-            } else { // assert: gvat->back().first=tid
-              MAP_EDGE_T edge;
-              if (!swap_vids) {
-                edge = make_pair(make_pair(v_lbl1, v_lbl2), e_lbl);
-                gvat->insert_occurrence(make_pair(vid1, vid2));
-                gvat->insert_vid_hs(vid1);
-                gvat->insert_vid(vid2);
-
-                if (v_lbl1 == v_lbl2) {
-                  gvat->insert_occurrence(make_pair(vid2, vid1));
-                  gvat->insert_vid_hs(vid2);
-                  gvat->insert_vid(vid1);
-                }
-              } else {
-                edge = make_pair(make_pair(v_lbl2, v_lbl1), e_lbl);
-
-                gvat->insert_occurrence(make_pair(vid2, vid1));
-                gvat->insert_vid_hs(vid2);
-                gvat->insert_vid(vid1);
-              }
-
-              typename FREQ_MAP::iterator mit = local_fm.find(edge);
-              if (mit == local_fm.end()) { // this edge is not added
-                local_fm.insert(mit, make_pair(edge, 2));
-              } else {
-                mit->second++;
-              }
-
-              if (g1) {
-                delete g1;
-                g1 = 0;
-              }
+            if (v_lbl1 == v_lbl2) {
+              gvat->insert_occurrence(make_pair(vid2, vid1));
+              gvat->insert_vid_hs(vid2);
+              gvat->insert_vid(vid1);
             }
+          } else {
+            edge = make_pair(make_pair(v_lbl2, v_lbl1), e_lbl);
 
-          } // switch
-          count++;
-        } // while(count<..)
-      } // if(word[0]=='u')
+            gvat->insert_occurrence(make_pair(vid2, vid1));
+            gvat->insert_vid_hs(vid2);
+            gvat->insert_vid(vid1);
+          }
+
+          typename FREQ_MAP::iterator mit = local_fm.find(edge);
+          if (mit == local_fm.end()) { // this edge is not added
+            local_fm.insert(mit, make_pair(edge, 2));
+          } else {
+            mit->second++;
+          }
+
+          if (g1) {
+            delete g1;
+            g1 = 0;
+          }
+        }
+
+        count++;
+      } // while(count<..)
       else {
         cerr << "graph.tokenizer.parse_next_trans: Unidentifiable line=" << line
              << endl;
@@ -340,7 +298,6 @@ private:
       el_prsr; /**< parses an element of desired type */
   element_parser<typename GRAPH_PATTERN::EDGE_T>
       edge_prsr; /**< parses an element of desired type */
-
 }; // end class tokenizer
 
 #endif
