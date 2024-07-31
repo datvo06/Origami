@@ -27,6 +27,7 @@ using namespace std;
 #include <set>
 #include <sstream>
 #include <string>
+#include <typedefs.h>
 #include <vector>
 
 time_tracker tt_iostream;

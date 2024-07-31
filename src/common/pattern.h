@@ -24,6 +24,7 @@
 // whole patterns each time shall be expensive in the current setup
 
 #include "properties.h"
+#include "typedefs.h"
 #include <sstream>
 #include <vector>
 
@@ -58,6 +59,18 @@ template <class PP, class MP, class ST,
           class CC,
           template <typename> class ALLOC>
 bool check_isomorphism(pattern<PP, MP, ST, CC, ALLOC> *const &);
+template <class PP, class MP, class PAT_ST,
+          template <class, typename, typename, template <typename> class>
+          class CC,
+          template <typename> class ALLOC>
+CC<GRAPH_PROP, typename GRAPH_PATTERN::VERTEX_T, typename GRAPH_PATTERN::EDGE_T,
+   ALLOC>
+check_isomorphism(GRAPH_PATTERN *const &cand_pat);
+template <class PP, class MP, class PAT_ST,
+          template <class, typename, typename, template <typename> class>
+          class CC,
+          template <typename> class ALLOC>
+ostream &operator<<(ostream &ostr, const GRAPH_PATTERN *p);
 
 #include "adj_list.h"
 #include "pat_support.h"
@@ -66,8 +79,8 @@ bool check_isomorphism(pattern<PP, MP, ST, CC, ALLOC> *const &);
  * \brief The Pattern Class
  *
  * Pattern Class takes 4 template arguments. PATTERN_PROPS is the pattern
- * property, MINING_PROPS is the mining property, ST is the pattern storage data
- * structure, CC is the canonical code class.
+ * property, MINING_PROPS is the mining property, ST is the pattern storage
+ * data structure, CC is the canonical code class.
  */
 template <class PATTERN_PROPS, class MINING_PROPS, class ST,
           template <class, typename, typename, template <typename> class>

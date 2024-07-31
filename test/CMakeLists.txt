@@ -1,5 +1,6 @@
 
 cmake_minimum_required(VERSION 3.10)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project name
 project(MemoryBasedGraphTest)
@@ -22,22 +23,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -L/usr/local/lib")
 
 # Add executable
 add_executable(graph_test ${SRC_FILES})
-
-# Link libraries (if needed)
-# target_link_libraries(graph_test /path/to/required/libraries)
-
-# Custom target for all
-add_custom_target(all
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target graph_test
-    DEPENDS graph_test
-)
-
-# Custom clean target
-add_custom_target(clean
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target clean
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_BINARY_DIR}/graph_test
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_BINARY_DIR}/*.o
-)
-
 # Build rules for the StringTokenizer library
 add_subdirectory(../src/StringTokenizer ${CMAKE_BINARY_DIR}/StringTokenizer)
