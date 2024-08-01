@@ -20,6 +20,8 @@
 #ifndef _LEVEL_ONE_HMAP_H
 #define _LEVEL_ONE_HMAP_H
 
+#include "hash_utils.hpp"
+#include <cassert>
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,6 +29,8 @@
 
 using namespace std;
 template <typename P> class element_parser;
+template <typename T> struct COMP_FUNC;
+#define assertm(exp, msg) assert(((void)msg, exp))
 
 /**
  * \brief Class to store edges i.e. level one patterns for graphs;
@@ -38,15 +42,24 @@ template <typename V_T, typename E_T> class level_one_hmap {
 public:
   typedef element_parser<V_T> V_EP;
   typedef element_parser<E_T> E_EP;
+  typedef COMP_FUNC<typename V_EP::HASH_TYPE> COMP_V;
+  typedef COMP_FUNC<typename E_EP::HASH_TYPE> COMP_E;
 
-  typedef std::unordered_set<typename E_EP::HASH_TYPE> LABELS;
+  typedef std::unordered_set<typename E_EP::HASH_TYPE,
+                             myhash<typename E_EP::HASH_TYPE>, COMP_E>
+      LABELS;
 
-  typedef std::unordered_map<typename V_EP::HASH_TYPE, LABELS> NEIGHBORS;
+  typedef std::unordered_map<typename V_EP::HASH_TYPE, LABELS,
+                             myhash<typename V_EP::HASH_TYPE>, COMP_V>
+      NEIGHBORS;
 
-  typedef std::unordered_map<typename V_EP::HASH_TYPE, unsigned int>
+  typedef std::unordered_map<typename V_EP::HASH_TYPE, unsigned int,
+                             myhash<typename V_EP::HASH_TYPE>, COMP_V>
       NEIGHBOR_CNT;
 
-  typedef std::unordered_map<typename V_EP::HASH_TYPE, NEIGHBORS> HMAP;
+  typedef std::unordered_map<typename V_EP::HASH_TYPE, NEIGHBORS,
+                             myhash<typename V_EP::HASH_TYPE>, COMP_V>
+      HMAP;
   typedef typename HMAP::const_iterator CONST_IT;
   typedef typename HMAP::iterator IT;
   typedef typename NEIGHBORS::const_iterator CONST_NIT;
@@ -101,7 +114,8 @@ public:
     pair<IT, bool> it_p;
 
     typename V_EP::HASH_TYPE ret = V_EP::conv_hash_type(src);
-    if ((it = _hmap.find(ret)) != _hmap.end()) {
+    it = _hmap.find(ret);
+    if (it != _hmap.end()) {
       // src exists in hmap
       CIT_IT cit_it = _cnt_map.find(ret);
       if ((nit = it->second.find(V_EP::conv_hash_type(dest))) !=
@@ -141,7 +155,6 @@ public:
     } // end if it=hmap.find..
 
     else {
-
       // src not found in hmap
       NEIGHBORS nbr;
       LABELS lset;
@@ -160,7 +173,9 @@ public:
         return;
       }
 
-      it_p = _hmap.insert(make_pair(V_EP::conv_hash_type(src), nbr));
+      it_p = _hmap.insert(make_pair(ret, nbr));
+      // assert that we can find the key
+      assertm(_hmap.find(ret) != _hmap.end(), "Expected to find key in map");
       if (!it_p.second) {
         cout << "level_one_map.insert: src insert(1) failed for src=" << src
              << endl;
@@ -193,6 +208,15 @@ public:
     if (it == _hmap.end()) {
       cout << "level_one_map.get_neighbors: src not found in hmap for src="
            << src << endl;
+      // print the whole map
+      for (auto it = _hmap.begin(); it != _hmap.end(); it++) {
+        cout << "Vertex=" << it->first << " has " << it->second.size()
+             << " neighbors:" << endl;
+        for (auto nit = it->second.begin(); nit != it->second.end(); nit++) {
+          cout << nit->first << " ";
+        }
+        cout << endl;
+      }
       exit(0);
     }
     return it->second;

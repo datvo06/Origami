@@ -60,6 +60,7 @@ bool print = false;
 #include "pat_fam.h"
 
 #include "mem_storage_manager.h"
+typedef unsigned int uint;
 
 #define GRAPH_PR proplist<undirected>
 #define GRAPH_MINE_PR proplist<Fk_F1, proplist<vert_mine>>
@@ -110,8 +111,8 @@ void parse_args(int argc, char *argv[]) {
 
 template <typename PATTERN, typename L1MAP>
 void populate_level_one_map(pat_fam<PATTERN> &level_one_pats, L1MAP &l1map) {
-  typename pat_fam<PATTERN>::CONST_IT pf_it = level_one_pats.begin();
-  while (pf_it != level_one_pats.end()) {
+  for (auto pf_it = level_one_pats.begin(); pf_it != level_one_pats.end();
+       pf_it++) {
     typename PATTERN::EDGE_T e;
     const typename PATTERN::VERTEX_T &src = (*pf_it)->label(0);
     const typename PATTERN::VERTEX_T &dest = (*pf_it)->label(1);
@@ -121,7 +122,6 @@ void populate_level_one_map(pat_fam<PATTERN> &level_one_pats, L1MAP &l1map) {
     }
     l1map.insert(src, dest, e);
     l1map.insert(dest, src, e);
-    pf_it++;
   }
 }
 
@@ -133,8 +133,8 @@ vector<int>::iterator random_starting_edge_index(vector<int> &sumlist,
 
 int main(int argc, char *argv[]) {
 
-  // COMMENT: For dealing with dataset in int format. Comment out the next line
-  // and
+  // COMMENT: For dealing with dataset in int format. Comment out the next
+  // line and
   //          uncomment the line after that.
   typedef adj_list<std::string, std::string> PAT_ST;
   typedef pattern<GRAPH_PR, GRAPH_MINE_PR, PAT_ST, canonical_code> GRAPH_PAT;
@@ -200,11 +200,11 @@ int main(int argc, char *argv[]) {
   long failed = 0;
   tt_total.start();
   vector<vector<bool>> matrix;
-  unsigned int row_size = dbr.get_transaction_count();
-  vector<pair<unsigned int, unsigned int>> stat;
+  uint row_size = dbr.get_transaction_count();
+  vector<pair<uint, uint>> stat;
   do {
     vector<bool> one_row(row_size, 0);
-    vector<unsigned int> all_tids;
+    vector<uint> all_tids;
     int index = randint(0, level_one_pats.size());
     pit = level_one_pats.begin() + index;
     GRAPH_PAT *saved_copy = (*pit)->exact_clone();
@@ -225,7 +225,8 @@ int main(int argc, char *argv[]) {
       max_count++; // increment the number of max graphs.
       if ((max_count != 0) && (max_count % 10 == 0)) {
         tt_total.stop();
-        // cout << "Time for " << max_count << " graphs = " << tt_total.print()
+        // cout << "Time for " << max_count << " graphs = " <<
+        // tt_total.print()
         // << " sec." << endl;
         tt_total.start();
       }
@@ -251,7 +252,8 @@ int main(int argc, char *argv[]) {
 
     cout << "Current " << i << " iteration: number of max-graph:" << max_count
          << endl;
-    cout << "##################################################################"
+    cout << "################################################################"
+            "##"
             "#####"
          << endl;
     i++;
