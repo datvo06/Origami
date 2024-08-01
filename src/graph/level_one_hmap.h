@@ -33,43 +33,20 @@ template <typename P> class element_parser;
  *
  * This class is designed to provide a fast lookup of possible labels/vertices
  */
-template <typename V_T, typename E_T,
-          template <typename> class ALLOC = std::allocator>
-class level_one_hmap {
-
-  struct custom_hash {
-    template <typename T> size_t operator()(const T &x) const {
-      // Implement the hash function for T
-      return std::hash<T>()(
-          x); // Ensure std::hash is specialized for T or implement your own
-    }
-  };
+template <typename V_T, typename E_T> class level_one_hmap {
 
 public:
   typedef element_parser<V_T> V_EP;
   typedef element_parser<E_T> E_EP;
 
-  typedef std::unordered_set<typename E_EP::HASH_TYPE, custom_hash,
-                             std::equal_to<typename E_EP::HASH_TYPE>,
-                             ALLOC<typename E_EP::HASH_TYPE>>
-      LABELS;
+  typedef std::unordered_set<typename E_EP::HASH_TYPE> LABELS;
 
-  typedef std::unordered_map<
-      typename V_EP::HASH_TYPE, LABELS, custom_hash, typename V_EP::COMP_FUNC,
-      ALLOC<std::pair<const typename V_EP::HASH_TYPE, LABELS>>>
-      NEIGHBORS;
+  typedef std::unordered_map<typename V_EP::HASH_TYPE, LABELS> NEIGHBORS;
 
-  typedef std::unordered_map<
-      typename V_EP::HASH_TYPE, unsigned int, custom_hash,
-      typename V_EP::COMP_FUNC,
-      ALLOC<std::pair<const typename V_EP::HASH_TYPE, unsigned int>>>
+  typedef std::unordered_map<typename V_EP::HASH_TYPE, unsigned int>
       NEIGHBOR_CNT;
 
-  typedef std::unordered_map<
-      typename V_EP::HASH_TYPE, NEIGHBORS, custom_hash,
-      typename V_EP::COMP_FUNC,
-      ALLOC<std::pair<const typename V_EP::HASH_TYPE, NEIGHBORS>>>
-      HMAP;
+  typedef std::unordered_map<typename V_EP::HASH_TYPE, NEIGHBORS> HMAP;
   typedef typename HMAP::const_iterator CONST_IT;
   typedef typename HMAP::iterator IT;
   typedef typename NEIGHBORS::const_iterator CONST_NIT;

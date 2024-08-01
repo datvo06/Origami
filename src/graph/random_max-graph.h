@@ -27,17 +27,19 @@
 #include <cassert>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 
 extern unsigned long int freq_pats_count;
 extern bool print;
+typedef unsigned int uint;
 
 // return a random number between lowest(including) and highest(excluding)
-unsigned int get_a_random_number(int lowest, int highest) {
+uint randint(int lowest, int highest) {
   if (highest < lowest) {
     cout << "In random_number_generator: Higher ranger is smaller than lower\n";
     exit(1);
   }
-  unsigned int random_integer;
+  uint random_integer;
   int range = (highest - lowest);
   random_integer = lowest + rand() % range;
   return random_integer;
@@ -45,7 +47,7 @@ unsigned int get_a_random_number(int lowest, int highest) {
 
 template <typename V_T, typename E_T> struct failed_map {
   typedef set<E_T> EDG_L;
-  typedef typename EDG_L::iterator EIT;
+  typedef typename set<E_T>::iterator EIT;
   typedef typename EDG_L::const_iterator CEIT;
   typedef map<V_T, EDG_L> INSIDE_MAP;
   typedef typename map<V_T, EDG_L>::iterator MIT;
@@ -98,6 +100,7 @@ template <typename V_T, typename E_T> struct failed_map {
       }
     }
   }
+
   bool exist(int vid, V_T v_l, E_T e_l) const {
     CIT it;
     it = _fm.find(vid);
@@ -127,7 +130,7 @@ template <typename V_T, typename E_T> struct edge_counter {
 
   map<EDGE_T, unsigned int> _counter;
 
-  unsigned int get_count(V_T src_l, V_T dest_l, E_T edge_l) {
+  uint get_count(V_T src_l, V_T dest_l, E_T edge_l) {
     EDGE_T e;
     if (src_l < dest_l)
       e = make_pair(make_pair(src_l, dest_l), edge_l);
@@ -213,9 +216,9 @@ void gen_random_max_graph(
   edge_counter.insert(pat->label(0), pat->label(1), e);
 
   while (true) {
-    unsigned int current_size = pat->size();
+    uint current_size = pat->size();
     assert(current_size != expired_vids.size());
-    int vid = get_a_random_number(0, current_size);
+    int vid = randint(0, current_size);
     while (expired_vids.find(vid) !=
            expired_vids.end()) { // this vertex expired
       vid = (vid + 1) % current_size;
@@ -251,8 +254,8 @@ void gen_random_max_graph(
 #endif
 
     int neighbor_count = emap.get_neighbors_count(src_v);
-    unsigned int eid = get_a_random_number(0, neighbor_count);
-    unsigned int end_id = eid;
+    uint eid = randint(0, neighbor_count);
+    uint end_id = eid;
     bool elig = false;
     V_T dest_v;
     do {
@@ -261,7 +264,7 @@ void gen_random_max_graph(
 #ifdef PRINT
       cout << "Current attempt of edge:" << eid << endl;
 #endif
-      unsigned int temp_eid = eid;
+      uint temp_eid = eid;
       while (temp_eid > nit->second.size() - 1) {
         temp_eid = temp_eid - nit->second.size();
         nit++;
@@ -363,7 +366,7 @@ void gen_random_max_graph(
 
 #ifdef PRINT
     cout << "choices for dest_vid:";
-    for (unsigned int i = 0; i < dest_vids->size(); i++) {
+    for (uint i = 0; i < dest_vids->size(); i++) {
       cout << (*dest_vids)[i] << " ";
     }
     cout << "\n";
@@ -373,7 +376,7 @@ void gen_random_max_graph(
     for (vector<int>::iterator it = dest_vids->begin(); it < dest_vids->end();
          it++) {
       cand_pat = pat->clone();
-      unsigned int lvid = 0;
+      uint lvid = 0;
       bool isfwd = false;
       if (it == dest_vids->end() - 1) { // this is the forward extention case
         lvid = cand_pat->add_vertex(dest_v);

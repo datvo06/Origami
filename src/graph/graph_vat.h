@@ -261,7 +261,7 @@ public:
     if (common_cnt < minsup) {
       // cout << "Leaving intersection 2.." << endl;
       delete cand_vat;
-      delete[] cand_vats;
+      delete cand_vats;
       return NULL;
     }
     // cout << "Number of common tids = " << common_cnt << endl;
@@ -278,7 +278,7 @@ public:
       // the number of transactions required to meet min_sup.
       if (rem_sup > min(v1->end() - it_v1, v2->end() - it_v2)) {
         delete cand_vat;
-        delete[] cand_vats;
+        delete cand_vats;
         return NULL;
       }
 
@@ -495,7 +495,7 @@ public:
     const VSETS &vs2 = (v2->_vids)[v2_idx].second;
     const EDGE_SETS &es1 = (v1->_vat)[v1_idx].second;
     int tid = (v2->_vids)[v2_idx].first;
-    bool fnd = false;
+    // bool fnd = false;
 
     // typedef HASHNS::hash_set<const char*, HASHNS::hash<const char*>, eqstr >
     // ES_STR_SET;
@@ -525,7 +525,7 @@ public:
               es1[i].find(make_pair(mapped_vid2, mapped_vid1)) ==
                   es1[i].end()) {
 
-            fnd = true;
+            // fnd = true;
 
             E_SET cand_es = es1[i];
             cand_es.insert(make_pair(mapped_vid1, mapped_vid2));

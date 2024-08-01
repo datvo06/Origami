@@ -64,6 +64,7 @@ bool print = false;
 #define GRAPH_PR proplist<undirected>
 #define GRAPH_MINE_PR proplist<Fk_F1, proplist<vert_mine>>
 #define DMTL_TKNZ_PR proplist<dmtl_format>
+#define PRINT
 
 time_tracker tt_total;
 
@@ -126,7 +127,7 @@ void populate_level_one_map(pat_fam<PATTERN> &level_one_pats, L1MAP &l1map) {
 
 vector<int>::iterator random_starting_edge_index(vector<int> &sumlist,
                                                  int max) {
-  int r = get_a_random_number(1, max + 1);
+  int r = randint(1, max + 1);
   return lower_bound(sumlist.begin(), sumlist.end(), r);
 }
 
@@ -143,7 +144,7 @@ int main(int argc, char *argv[]) {
   map<pair<pair<GRAPH_PAT::VERTEX_T, GRAPH_PAT::VERTEX_T>, GRAPH_PAT::EDGE_T>,
       int>
       edge_freq;
-  typedef edge_counter<GRAPH_PAT::VERTEX_T, GRAPH_PAT::EDGE_T> PAT_AS_EDGE;
+  // typedef edge_counter<GRAPH_PAT::VERTEX_T, GRAPH_PAT::EDGE_T> PAT_AS_EDGE;
 
   parse_args(argc, argv);
   pat_fam<GRAPH_PAT> level_one_pats;
@@ -192,7 +193,7 @@ int main(int argc, char *argv[]) {
   /// This is for stopping condition  /////////
   map<std::string, int> all_pat;
   set<std::string, int> max_pat;
-  pat_fam<GRAPH_PAT>::iterator pit, qit;
+  pat_fam<GRAPH_PAT>::iterator pit;
   i = 1;
   int max_count = 0;
 
@@ -204,7 +205,7 @@ int main(int argc, char *argv[]) {
   do {
     vector<bool> one_row(row_size, 0);
     vector<unsigned int> all_tids;
-    int index = get_a_random_number(0, level_one_pats.size());
+    int index = randint(0, level_one_pats.size());
     pit = level_one_pats.begin() + index;
     GRAPH_PAT *saved_copy = (*pit)->exact_clone();
 

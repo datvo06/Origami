@@ -29,20 +29,18 @@
 #include <utility> // For std::pair
 
 using namespace std;
+template <typename T> using ALLOC = std::allocator<T>;
 
-template <typename VERTEX_T, typename EDGE_T, template <typename> class ALLOC>
-struct vertex_info;
+template <typename VERTEX_T, typename EDGE_T> struct vertex_info;
 
-template <typename VERTEX_T, typename EDGE_T, template <typename> class ALLOC>
-ostream &operator<<(ostream &, const vertex_info<VERTEX_T, EDGE_T, ALLOC> &);
+template <typename VERTEX_T, typename EDGE_T>
+ostream &operator<<(ostream &, const vertex_info<VERTEX_T, EDGE_T> &);
 
 /// class to store all info associated with a vertex.
-template <typename VERTEX_T, typename EDGE_T,
-          template <typename> class ALLOC = std::allocator>
-struct vertex_info {
+template <typename VERTEX_T, typename EDGE_T> struct vertex_info {
 
-  typedef pair<int, EDGE_T> EDGE_P;            // <other-vertex id, edge-Label>
-  typedef vector<EDGE_P, ALLOC<EDGE_P>> EDGES; // vector of edges
+  typedef pair<int, EDGE_T> EDGE_P; // <other-vertex id, edge-Label>
+  typedef vector<EDGE_P> EDGES;     // vector of edges
   typedef typename EDGES::iterator EIT;
   typedef typename EDGES::const_iterator CONST_EIT;
 
@@ -106,7 +104,7 @@ struct vertex_info {
   } // in_edge()
 
   /// Returns true if this vertex is less than vertex2
-  bool operator<(const vertex_info<VERTEX_T, EDGE_T, ALLOC> &vertex2) const {
+  bool operator<(const vertex_info<VERTEX_T, EDGE_T> &vertex2) const {
 
     if (v < vertex2.v)
       return true;
@@ -117,7 +115,7 @@ struct vertex_info {
   /// Outputs a vertex_info object  to the stream. This is a global function,
   /// not a member function.
   friend ostream &operator<< <>(ostream &,
-                                const vertex_info<VERTEX_T, EDGE_T, ALLOC> &);
+                                const vertex_info<VERTEX_T, EDGE_T> &);
 
   /// public data members ///
   VERTEX_T v;      // vertex object
@@ -155,11 +153,10 @@ ostream &operator<<(ostream &ostr, const vertex_info<V_T, E_T> &vi) {
   return ostr;
 } // end operator<<
 
-template <typename V_T, typename E_T, template <typename> class ALLOC>
-class adj_list;
+template <typename V_T, typename E_T> class adj_list;
 
-template <typename V_T, typename E_T, template <typename> class ALLOC>
-ostream &operator<<(ostream &, const adj_list<V_T, E_T, ALLOC> &);
+template <typename V_T, typename E_T>
+ostream &operator<<(ostream &, const adj_list<V_T, E_T> &);
 
 /**
  * \brief core adjacency list class to store the pattern.
@@ -167,18 +164,16 @@ ostream &operator<<(ostream &, const adj_list<V_T, E_T, ALLOC> &);
  * the template arguments are vertex_type and edge_type.
  */
 
-template <typename V_T, typename E_T,
-          template <typename> class ALLOC = std::allocator>
-class adj_list {
+template <typename V_T, typename E_T> class adj_list {
 
 public:
   typedef V_T VERTEX_T;
   typedef E_T EDGE_T;
-  typedef vertex_info<VERTEX_T, EDGE_T, ALLOC> VERTEX_INFO;
-  typedef adj_list<V_T, E_T, ALLOC> ADJ_L;
+  typedef vertex_info<VERTEX_T, EDGE_T> VERTEX_INFO;
+  typedef adj_list<V_T, E_T> ADJ_L;
 
   template <typename T>
-  class VERTEX_LIST : public std::vector<T, ALLOC<T>> {
+  class VERTEX_LIST : public std::vector<T> {
   }; // each vertex and its info is stored as a vector, for fast lookup since
      // we'll know its unique id
 
@@ -426,7 +421,7 @@ public:
   } // end get_edge()
 
   // friend output extraction
-  friend ostream &operator<< <>(ostream &, const adj_list<V_T, E_T, ALLOC> &);
+  friend ostream &operator<< <>(ostream &, const adj_list<V_T, E_T> &);
 
 private:
   ADJ_LIST _alist;
@@ -435,9 +430,9 @@ private:
 }; // end class adj_list
 
 // friend extraction over output stream
-template <typename V_T, typename E_T, template <typename> class ALLOC>
-ostream &operator<<(ostream &ostr, const adj_list<V_T, E_T, ALLOC> &al) {
-  typename adj_list<E_T, V_T, ALLOC>::CONST_IT it = al.begin();
+template <typename V_T, typename E_T>
+ostream &operator<<(ostream &ostr, const adj_list<V_T, E_T> &al) {
+  typename adj_list<E_T, V_T>::CONST_IT it = al.begin();
   while (it != al.end()) {
     ostr << *it;
     it++;
@@ -446,10 +441,10 @@ ostream &operator<<(ostream &ostr, const adj_list<V_T, E_T, ALLOC> &al) {
   return ostr;
 }
 
-template <typename V_T, typename E_T, template <typename> class ALLOC>
-typename adj_list<V_T, E_T, ALLOC>::IT
-adj_list<V_T, E_T, ALLOC>::vertex_vals(const int &idval) {
-  typename adj_list<V_T, E_T, ALLOC>::IT it = _alist.begin();
+template <typename V_T, typename E_T>
+typename adj_list<V_T, E_T>::IT
+adj_list<V_T, E_T>::vertex_vals(const int &idval) {
+  typename adj_list<V_T, E_T>::IT it = _alist.begin();
   if (idval > size() - 1) {
     std::cerr << "adj_list.vertex_vals: out of range vertex id, " << idval
               << endl;

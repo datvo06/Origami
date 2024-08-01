@@ -77,9 +77,7 @@ public:
     std::string word;
 
     int lineno = 0;
-    int count; // # of words parsed from line
     int tid = -1;
-    int num_items = -1; // # of words to be read from this line
     int pos; // stores starting position of input stream's get pointer
     VAT *gvat;
     GRAPH_PATTERN *g1 = 0;
@@ -102,13 +100,11 @@ public:
         return tid;
       }
 
-      count = 0;             // currently processing token number
       if (line.at(0) == '#') // comment line, so ignoring
         continue;
 
       // Now start tokenizing the line
       std::vector<std::string> tokens = split(line, ' ');
-      auto tok_it = tokens.begin();
       if (tokens.size() < 3) { // may be ill-formed or erroneous line
         cerr << "Input file may have error at lineno:" << lineno << endl;
         map_update(fm, local_fm);
@@ -263,9 +259,7 @@ public:
           }
         }
 
-        count++;
-      } // while(count<..)
-      else {
+      } else {
         cerr << "graph.tokenizer.parse_next_trans: Unidentifiable line=" << line
              << endl;
         return -1;
