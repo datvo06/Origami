@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU General Public License along
  *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ *  59 tmple Place, Suite 330, Boston, MA 02111-1307, USA.
  */
 #ifndef _GRAPH_MAX_GEN_H
 #define _GRAPH_MAX_GEN_H
@@ -262,18 +262,18 @@ void gen_random_max_graph(
       nit = nbrs.begin();
 
 #ifdef PRINT
-      cout << "Current attempt of edge:" << eid << endl;
+      cout << "Current attmpt of edge:" << eid << endl;
 #endif
-      uint temp_eid = eid;
-      while (temp_eid > nit->second.size() - 1) {
-        temp_eid = temp_eid - nit->second.size();
+      uint tmp_eid = eid;
+      while (tmp_eid > nit->second.size() - 1) {
+        tmp_eid = tmp_eid - nit->second.size();
         nit++;
       }
 
       lit = nit->second.begin();
-      while (temp_eid > 0) {
+      while (tmp_eid > 0) {
         lit++;
-        temp_eid--;
+        tmp_eid--;
       }
       dest_v = nit->first;
 #ifdef PRINT
