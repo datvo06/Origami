@@ -21,6 +21,7 @@
 #define MEM_STORAGE_MANAGER_H_
 
 #include "generic_classes.h"
+#include "hash_utils.hpp"
 #include "helper_funs.h"
 #include "pat_fam.h"
 #include "pat_support.h"
@@ -46,15 +47,9 @@ class storage_manager<PAT, VAT, memory_storage> {
 
   typedef typename PAT::CC_STORAGE_TYPE C_ST;
   typedef typename PAT::CC_COMPARISON_FUNC C_CF;
-  struct custom_hash {
-    size_t operator()(const C_ST &x) const {
-      // Implement the hash function for C_ST
-      return std::hash<C_ST>()(x);
-    }
-  };
 
 public:
-  typedef std::unordered_map<C_ST, VAT *, custom_hash, C_CF> CC_ST_TO_VATPTR;
+  typedef std::unordered_map<C_ST, VAT *, myhash<C_ST>, C_CF> CC_ST_TO_VATPTR;
   typedef typename CC_ST_TO_VATPTR::const_iterator CONST_IT;
   typedef typename CC_ST_TO_VATPTR::iterator IT;
   typedef pattern_support<typename PAT::MINE_PROPS> PAT_SUP;

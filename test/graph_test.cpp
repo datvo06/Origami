@@ -185,6 +185,7 @@ int main(int argc, char *argv[]) {
   freq_pats = level_one_pats;
 
   populate_level_one_map(freq_pats, l1_map);
+  l1_map.print();
   count_support<GRAPH_PR, GRAPH_MINE_PR, PAT_ST, canonical_code, memory_storage>
       cs(vat_map);
 
@@ -215,7 +216,7 @@ int main(int argc, char *argv[]) {
     gen_random_max_graph(*pit, l1_map, minsup, cs, edge_freq, all_pat, stat,
                          failed);
 
-    // The following condition true means it is a new pattern
+    /// The following condition true means it is a new pattern
     if (failed == prev_failed) {
       // cout << "pattern no:" << i << endl;
       // const GRAPH_PAT::CAN_CODE& cc = check_isomorphism(*pit);
@@ -259,9 +260,8 @@ int main(int argc, char *argv[]) {
     i++;
     // system("top -b | grep graph_test > _mem_footprint");
 
-  }
-  // while (max_count < tot_max_pats);
-  while (i < 120400);
+  } while (max_count < tot_max_pats);
+  // while (i < 120400);
 
   // creating statistics of failed iterations
   cout << "Statistics\n";

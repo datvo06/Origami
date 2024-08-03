@@ -1,6 +1,7 @@
 #ifndef _HASH_UTIL_HPP_
 #define _HASH_UTIL_HPP_
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 template <typename ResultT, ResultT OffsetBasis, ResultT Prime>
@@ -66,7 +67,8 @@ template <typename T> struct myhash {
 
 template <> struct myhash<std::string> {
   std::size_t operator()(const std::string &s) const noexcept {
-    return hash_bytes(s.data(), s.size());
+    // use default std::hash
+    return std::hash<std::string>{}(s);
   }
 };
 

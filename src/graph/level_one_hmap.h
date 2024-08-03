@@ -71,7 +71,9 @@ public:
 
   void print() const {
     cout << "LEVEL ONE HMAP CONTENTS" << endl << endl;
-
+    // Print typename V_EP::HASH_TYPE and typename E_EP::HASH_TYPE
+    cout << "V_T=" << typeid(V_T).name() << " E_T=" << typeid(E_T).name()
+         << endl;
     CONST_IT it;
     CONST_NIT nit;
     CONST_LIT lit;
@@ -80,9 +82,9 @@ public:
       cout << "Vertex=" << it->first << " has neighbors:" << endl;
       for (nit = it->second.begin(); nit != it->second.end(); nit++) {
         cout << nit->first << " with labels:";
-        for (lit = nit->second.begin(); lit != nit->second.end(); lit++)
+        for (lit = nit->second.begin(); lit != nit->second.end(); lit++) {
           cout << " " << *lit;
-        cout << endl;
+        }
       }
       cout << endl;
     }

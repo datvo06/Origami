@@ -98,7 +98,12 @@ public:
     return !(s1 == s2);
   }
 
-  static HASH_TYPE conv_hash_type(const OBJ_T &s) { return s.c_str(); }
+  static HASH_TYPE conv_hash_type(const OBJ_T &s) {
+    // malloc, memcpy then return the pointer
+    char *ret = (char *)malloc(s.size() + 1);
+    memcpy(ret, s.c_str(), s.size() + 1);
+    return ret;
+  }
 
 }; // end clas element_parser<std::string>
 
