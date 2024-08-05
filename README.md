@@ -12,5 +12,8 @@ Origami uses random walks over the graph partial order to mine a representative 
     Data Mining. October 2007.
 
 ## How to
-
-cd test; type make
+```sh
+cd test && mkdir build && cd build
+cmake ..
+make
+```
