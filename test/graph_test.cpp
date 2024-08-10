@@ -253,12 +253,14 @@ int main(int argc, char *argv[]) {
 
     // max_pats.push_back(*pit);
 
-    cout << "Current " << i << " iteration: number of max-graph:" << max_count
-         << endl;
-    cout << "################################################################"
-            "##"
-            "#####"
-         << endl;
+    // cout << "Current " << i << " iteration: number of max-graph:" <<
+    // max_count
+    //      << endl;
+    // cout <<
+    // "################################################################"
+    //         "##"
+    //         "#####"
+    //      << endl;
     i++;
     // system("top -b | grep graph_test > _mem_footprint");
 
