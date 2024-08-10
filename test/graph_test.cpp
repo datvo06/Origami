@@ -65,7 +65,7 @@ typedef unsigned int uint;
 #define GRAPH_PR proplist<undirected>
 #define GRAPH_MINE_PR proplist<Fk_F1, proplist<vert_mine>>
 #define DMTL_TKNZ_PR proplist<dmtl_format>
-#define PRINT
+// #define PRINT
 
 time_tracker tt_total;
 
@@ -196,6 +196,7 @@ int main(int argc, char *argv[]) {
   set<std::string, int> max_pat;
   pat_fam<GRAPH_PAT>::iterator pit;
   i = 1;
+  int last_updated = i;
   int max_count = 0;
 
   long failed = 0;
@@ -224,6 +225,7 @@ int main(int argc, char *argv[]) {
 
       // Tids in which this pattern occurs
       max_count++; // increment the number of max graphs.
+      last_updated = i;
       if ((max_count != 0) && (max_count % 10 == 0)) {
         tt_total.stop();
         // cout << "Time for " << max_count << " graphs = " <<
@@ -260,14 +262,15 @@ int main(int argc, char *argv[]) {
     i++;
     // system("top -b | grep graph_test > _mem_footprint");
 
-  } while (max_count < tot_max_pats);
+  } while (max_count < tot_max_pats && i - last_updated < 1000);
+  // TODO: make this threshold 1000 a command line argument
   // while (i < 120400);
 
   // creating statistics of failed iterations
   cout << "Statistics\n";
   map<std::string, int>::const_iterator apit;
-  for (apit = all_pat.begin(); apit != all_pat.end(); apit++) {
-    cout << apit->first << "(" << apit->second << ")" << endl;
+  for (auto kv_pair : all_pat) {
+    cout << kv_pair.first << "(" << kv_pair.second << ")" << endl;
   }
   tt_total.stop();
 } // main()
