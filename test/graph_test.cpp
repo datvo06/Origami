@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
     GRAPH_PAT *saved_copy = (*pit)->exact_clone();
 
     int prev_failed = failed;
-    cout << "calling random graph\n";
+    // cout << "calling random graph\n";
 
     gen_random_max_graph(*pit, l1_map, minsup, cs, edge_freq, all_pat, stat,
                          failed);
