@@ -1,5 +1,6 @@
 #ifndef _HASH_UTIL_HPP_
 #define _HASH_UTIL_HPP_
+#include <bits/stdc++.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
