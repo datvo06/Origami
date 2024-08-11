@@ -20,6 +20,7 @@
 #ifndef _HELPER_FUNS_H_
 #define _HELPER_FUNS_H_
 
+#include <cstring>
 #include <functional>
 #include <string>
 #include <utility>
